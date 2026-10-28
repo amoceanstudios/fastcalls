@@ -4,20 +4,20 @@ Een donkere, creatieve saleswerkruimte met een rustige basis, cyaan als primair 
 
 ## Tokens
 
-De basistokens staan in `src/styles/tokens.css`; de crystal-oppervlakken en hun overrides staan in `src/styles/liquid-glass.css`.
+De basistokens staan in `src/styles/tokens.css`, de crystal-structuur in `src/styles/liquid-glass.css` en de huidige semantische afwerking in `src/styles/studio.css`. De Studio-laag wordt als laatste geladen en is de actuele bron voor oppervlak-, tekst-, actie- en motionwaarden.
 
 | Onderdeel        | Keuze                                                         |
 | ---------------- | ------------------------------------------------------------- |
-| Achtergrond      | Near-black `#05070D`                                          |
-| Oppervlak        | Oceaanblauw `#0A111E`, subtiel lichtere verdiepingen          |
-| Primaire tekst   | Off-white `#F5F7FA`                                           |
-| Secundaire tekst | `#A2B0C3`, leesbaar op donkere oppervlakken                   |
-| Primaire actie   | Cyaan `#22D3EE`, donkere tekst                                |
+| Achtergrond      | Near-black `#060A12`                                          |
+| Oppervlak        | Oceaanblauw `#0D1828`, subtiel lichtere verdiepingen          |
+| Primaire tekst   | Off-white `#F3F7FC`                                           |
+| Secundaire tekst | `#B0BFD1`, leesbaar op donkere oppervlakken                   |
+| Primaire actie   | Cyaan Aqua-gradient `#A4F6FF` → `#35D5E9`, donkere tekst      |
 | Status           | Groen voor bevestigde positieve status, rood voor fouten      |
 | Lettertype       | Manrope Variable, lokaal gehost, `font-display: swap`         |
-| Typografie       | 11/13/14 px voor aanvullende tekst en invoer; titels 30–40 px |
+| Typografie       | 12/13/15 px voor tekst; mobiele invoer 16 px; titels 30–42 px |
 | Spatiëring       | 4, 8, 12, 16, 20, 24, 32, 40 px                               |
-| Hoekradii        | 6, 10, 16, 22 px; pillen 999 px                               |
+| Hoekradii        | 14, 24, 30 px; pillen 999 px                                  |
 | Beweging         | 150/200/240 ms; `cubic-bezier(.2,.8,.2,1)`                    |
 | Schaduw          | Rustige paneelschaduw, aparte tokens voor zwevende lagen      |
 
@@ -83,3 +83,26 @@ Manrope wordt onder de OFL-licentie meegeleverd; zie `public/fonts/LICENSE-Manro
 Het dashboard geeft opgeslagen notities, terugbelafspraken, eigen bedrijven en conceptmails voorrang boven het doorwerken van de volledige catalogus. Mijn werk staat permanent in de mobiele navigatie: Overzicht · Mijn werk · Bedrijven · Agenda · Meer. Belmodus en beheer staan in Meer. Persoonlijke kaarten tonen het bedrijf, soort opgeslagen informatie, datum en inhoud; links gaan naar de juiste bestaande record. Afgeronde afspraken blijven zichtbaar en heropenbaar.
 
 `src/styles/personal-work.css` bevat de responsieve indeling. Op mobiel vormen vier snelkoppelingen een raster van twee kolommen. Zoekfilters hebben expliciete labels en aantallen, geen betekenis die alleen van een pictogram of kleur afhangt. Werkresultaten tonen volledige tekst; alleen dashboardvoorbeelden gebruiken een korte tekstuitsnede met een duidelijke link. De zoekbalk blijft bereikbaar tijdens scrollen. Profieltabs hebben ruime aanraakvlakken in twee kolommen. Focus wordt bij een directe recordlink naar die record verplaatst en teruggaan behoudt de zoekcontext. Er is geen opslagmigratie of reset aan deze weergavewijziging gekoppeld.
+
+## AMOCEAN Studio · visuele afwerking
+
+Deze laag is uitsluitend presentatief: dezelfde routes, schermindeling, knoppen, formulieren en opgeslagen gegevens. `src/main.tsx` voegt alleen de stylesheet toe. Geen wijziging aan componentlogica, gegevensschema, database, seeddata, zoekfilters of opslaghandelingen.
+
+| Rol                | Donker                         | Licht                          |
+| ------------------ | ------------------------------ | ------------------------------ |
+| Basis              | `#060A12`                      | `#EDF3F8`                      |
+| Primair oppervlak  | `rgb(13 24 40 / 54%)`          | `rgb(255 255 255 / 64%)`       |
+| Opaque fallback    | `#0D1828`                      | `#F9FCFF`                      |
+| Verhoogd oppervlak | `#101D30`                      | `#F5FAFF`                      |
+| Tekst              | `#F3F7FC`                      | `#122337`                      |
+| Aanvullende tekst  | `#B0BFD1`                      | `#4B5D70`                      |
+| Accent             | `#81E9F6`                      | `#086B83`                      |
+| Primaire actie     | Aqua-gradient met donkere inkt | Petrol-gradient met witte inkt |
+
+Het oppervlaktesysteem onderscheidt transparante kaarten, rustigere invoervelden en beter afgeschermde verhoogde lagen voor menu's en modals. Afgeronde hoeken, een verfijnde lichte bovenrand en één zachte schaduw geven diepte. De grote achtergrondringen zijn vervangen door een rustige, statische lichtverdeling. Iconen in persoonlijke snelkoppelingen staan in kleine gekleurde vakken; aantallen gebruiken tabulaire cijfers. Koppen hebben een duidelijke zwaardere hiërarchie. Het bestaande lokaal gehoste Manrope blijft behouden.
+
+Motiontokens: **150 ms** voor drukken, focus, kleur en randen; **200 ms** voor hoverdiepte; **240 ms** voor introductie en dialogen. Easing is `cubic-bezier(0.16, 1, 0.3, 1)` voor uitlopende beweging en `cubic-bezier(0.2, 0.8, 0.2, 1)` voor indrukken. Drukfeedback gebruikt schaal 0,98 en hooguit 1 px verplaatsing. Hover optillen geldt alleen bij een precieze aanwijzer. Interactieve links reageren eveneens kort. Er zijn geen doorlopende animaties, JavaScript-animatielussen, extra bibliotheken of routewissels toegevoegd.
+
+Op mobiel opent een dialoog visueel vanaf de onderrand, met de bestaande sluitknop, focusafhandeling en toetsenbordbediening. Desktop behoudt een gecentreerde dialoog met een korte schaalbeweging. Tekst en kaarten blijven tijdens het verschijnen volledig opaak; alleen de decoratieve achtergrond-overlay mag vervagen. De mobiele dock krijgt een actieve achtergrond voor het volledige navigatie-item en behoudt dezelfde vijf keuzes.
+
+`prefers-reduced-motion` schakelt alle animaties en transitions uit, inclusief druk- en hoververplaatsingen. `prefers-reduced-transparency` en ontbrekende backdrop-filterondersteuning krijgen solide oppervlakken. Blur blijft 4 px op desktop en 2 px op mobiel voor bestaande panelen; navigatie gebruikt de reeds aanwezige beperkte blur. Invoer blijft op mobiel 16 px om onbedoeld inzoomen te voorkomen. Aanraakvlakken en focusranden blijven minimaal 44 px respectievelijk 2 px. Beweging maskeert nooit inhoud of een opslagstatus.

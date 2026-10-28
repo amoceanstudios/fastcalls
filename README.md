@@ -167,3 +167,11 @@ Zoeken werkt op volledige notitie-/concepttekst, bedrijfsnaam, telefoon, e-maila
 Deze verandering wijzigt **geen databanknaam, schemaversie, entiteitsmodel, catalogusbestand of opslag-/herstelroutine**. De nieuwe verzamelweergaven lezen bestaande records. De mobiele behoudtest vergelijkt de volledige inhoud van prospects, notes, followups, calls, activities, drafts en settings vóór en na zoeken, openen en herladen: de inhoud moet exact gelijk blijven. Alle fixtures blijven geïsoleerd van echte gebruiksgegevens. Gewone handelingen zoals een afspraak afronden gebruiken de bestaande opslagfuncties en vereisen een expliciete gebruikersactie.
 
 De mobiele interface heeft vier grote persoonlijke snelkoppelingen, leesbare tekst, aanraakvlakken van minimaal 44 px en zoekt zonder de volledige bedrijvenlijst te renderen. Zoekresultaten worden in stappen van 30 getoond. Profieltabs staan op kleine schermen in twee kolommen. De bestaande donkere crystal-glasshuisstijl, lichte modus en verminderde beweging blijven ondersteund.
+
+## Studio-afwerking: uitsluitend visuele wijzigingen
+
+`src/styles/studio.css` levert het huidige visuele design system: verfijnde transparante oppervlakken, helderder hiërarchie in tekst en knoppen, zachtere schaduwen, duidelijk geselecteerde filters en een samenhangende mobiele dock. Primaire acties gebruiken een herkenbare aqua-/petrolafwerking. Dezelfde indeling en functies blijven beschikbaar.
+
+Knoppen en interactieve links hebben korte drukfeedback; hoverreacties werken alleen met een muis of vergelijkbare aanwijzer. Modals krijgen op mobiel een paneelbeweging vanaf onderen en op desktop een subtiele schaalbeweging. Elke interactie duurt 150–240 ms. Verminderde beweging schakelt deze effecten uit. Beide thema's en het transparantiefallback blijven ondersteund. Zie `DESIGN_SYSTEM.md` voor de exacte tokens en gebruiksregels.
+
+Deze afwerking wijzigt geen opslagcode, database, routes, gegevensmodellen, catalogus of bedrijfslogica. Opgeslagen notities, afspraken, concepten en bestaande keuzes blijven in dezelfde opslag staan. De bestaande mobiele behoudtest, toegankelijkheidscontroles en volledige browserworkflows controleren de wijzigingen.

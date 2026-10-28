@@ -1,0 +1,654 @@
+/* AMOCEAN Studio — semantic finish layer. Visual only; no workflow or data state. */
+:root {
+  --studio-surface: rgb(255 255 255 / 64%);
+  --studio-surface-solid: #f9fcff;
+  --studio-elevated: #f5faff;
+  --studio-field: rgb(255 255 255 / 70%);
+  --studio-stroke: rgb(47 82 111 / 22%);
+  --studio-rim: rgb(255 255 255 / 94%);
+  --studio-tint: rgb(8 116 143 / 9%);
+  --studio-action-top: #08758a;
+  --studio-action-bottom: #07586d;
+  --studio-action-ink: #fff;
+  --studio-icon-fill: rgb(10 120 149 / 9%);
+  --studio-shadow: 0 10px 36px #2349690b, inset 0 1px 0 #ffffffd9;
+  --studio-chrome-shadow: 0 14px 40px #23496912, inset 0 1px 0 #ffffffed;
+  --studio-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --studio-ease-press: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --motion-fast: 150ms;
+  --motion-normal: 200ms;
+  --motion-slow: 240ms;
+  --ease: var(--studio-ease-out);
+  --type-xs: 12px;
+  --type-sm: 13px;
+  --type-base: 15px;
+  --type-title: clamp(30px, 3vw, 42px);
+  --radius-sm: 14px;
+  --radius-md: 24px;
+  --radius-lg: 30px;
+  --bg: #edf3f8;
+  --panel: #f8fbfe;
+  --text: #122337;
+  --muted: #4b5d70;
+  --primary: #086b83;
+  --accent: var(--primary);
+  --focus: var(--primary);
+  --soft: #e9f1f7;
+  --liquid-fill: var(--studio-surface);
+  --liquid-control: var(--studio-field);
+  --liquid-control-edge: var(--studio-stroke);
+  --liquid-edge: var(--studio-stroke);
+  --liquid-highlight: var(--studio-rim);
+  --liquid-action: var(--studio-tint);
+  --liquid-action-ink: var(--primary);
+  --liquid-blur: 4px;
+  --liquid-reflection: linear-gradient(
+    145deg,
+    #ffffff9c,
+    #ffffff16 44%,
+    #ffffff00 72%,
+    #b2e7f50b
+  );
+  --liquid-shadow: var(--studio-shadow);
+  --shadow-panel: var(--studio-shadow);
+  --glass-bg: rgb(247 252 255 / 86%);
+}
+[data-theme="dark"] {
+  --studio-surface: rgb(13 24 40 / 54%);
+  --studio-surface-solid: #0d1828;
+  --studio-elevated: #101d30;
+  --studio-field: rgb(4 12 24 / 64%);
+  --studio-stroke: rgb(157 189 220 / 21%);
+  --studio-rim: rgb(223 242 255 / 33%);
+  --studio-tint: rgb(86 221 241 / 11%);
+  --studio-action-top: #a4f6ff;
+  --studio-action-bottom: #35d5e9;
+  --studio-action-ink: #06252f;
+  --studio-icon-fill: rgb(99 225 245 / 10%);
+  --studio-shadow: 0 12px 34px #0000001a, inset 0 1px 0 #e5f6ff12;
+  --studio-chrome-shadow: 0 16px 48px #00000036, inset 0 1px 0 #e5f6ff21;
+  --bg: #060a12;
+  --panel: #0e1929;
+  --text: #f3f7fc;
+  --muted: #b0bfd1;
+  --primary: #81e9f6;
+  --accent: var(--primary);
+  --focus: #a2f2ff;
+  --soft: #142339;
+  --liquid-fill: var(--studio-surface);
+  --liquid-control: var(--studio-field);
+  --liquid-control-edge: var(--studio-stroke);
+  --liquid-edge: var(--studio-stroke);
+  --liquid-highlight: var(--studio-rim);
+  --liquid-action: var(--studio-tint);
+  --liquid-action-ink: var(--primary);
+  --liquid-reflection: linear-gradient(
+    140deg,
+    #d5edff0c,
+    #ffffff02 42%,
+    #ffffff00 70%,
+    #80e5ff07
+  );
+  --liquid-shadow: var(--studio-shadow);
+  --shadow-panel: var(--studio-shadow);
+  --glass-bg: rgb(10 20 35 / 86%);
+}
+body {
+  -webkit-tap-highlight-color: transparent;
+}
+.glass-scene {
+  background:
+    radial-gradient(ellipse at 92% 0%, #a6d9e74d, transparent 50%),
+    radial-gradient(ellipse at 0% 65%, #c0d6ef54, transparent 52%),
+    linear-gradient(150deg, #edf4fa, #f5f8fc 48%, #e8f3f8);
+}
+[data-theme="dark"] .glass-scene {
+  background:
+    radial-gradient(ellipse at 90% -8%, #14577545, transparent 48%),
+    radial-gradient(ellipse at 3% 58%, #1c38552b, transparent 50%),
+    linear-gradient(150deg, #090f1a, #060a12 52%, #0a1724);
+}
+.glass-scene::before {
+  width: 1400px;
+  height: 800px;
+  right: -650px;
+  top: -560px;
+  border: 1px solid #9fdef51c;
+  background: linear-gradient(150deg, #c1eaff08, transparent 60%);
+  box-shadow: none;
+}
+.glass-scene::after {
+  content: none;
+}
+h1 {
+  font-weight: 730;
+  letter-spacing: -0.055em;
+}
+h2,
+h3 {
+  font-weight: 660;
+}
+strong {
+  font-weight: 650;
+}
+.page-header p {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.65;
+}
+.page-header .eyebrow {
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.16em;
+}
+.page-header .eyebrow::before {
+  height: 3px;
+  width: 15px;
+  border-radius: 8px;
+  background: var(--primary);
+}
+html[data-theme]
+  :is(
+    .panel,
+    .welcome-panel,
+    .next-panel,
+    .opportunity-panel,
+    .empty,
+    .filter-bar,
+    .prospect-card,
+    .session-stats,
+    .work-card
+  ),
+html[data-theme] .personal-shortcuts > a {
+  border-color: var(--studio-stroke);
+  border-top-color: var(--studio-rim);
+  background: var(--liquid-reflection), var(--studio-surface);
+  box-shadow: var(--studio-shadow);
+  border-radius: var(--radius-md);
+}
+html[data-theme]
+  :is(.panel, .welcome-panel, .next-panel, .opportunity-panel, .empty)::before {
+  opacity: 0.55;
+}
+html[data-theme] :is(.sidebar, .topbar, .mobile-nav, .mobile-sales-bar) {
+  background: var(--liquid-reflection), var(--glass-bg) !important;
+  border-color: var(--studio-stroke);
+  border-top-color: var(--studio-rim);
+  box-shadow: var(--studio-chrome-shadow);
+}
+html[data-theme] .sidebar {
+  border-radius: 26px;
+}
+html[data-theme] .topbar {
+  border-radius: 20px;
+}
+.brand strong {
+  font-weight: 780;
+  letter-spacing: -0.06em;
+}
+.sidebar nav a,
+.settings-link {
+  border-radius: 14px;
+  font-size: 13px;
+  font-weight: 600;
+}
+html[data-theme] .sidebar nav a.active,
+html[data-theme] .settings-link.active {
+  background: var(--studio-tint);
+  border-color: var(--studio-stroke);
+  color: var(--primary);
+  box-shadow: inset 0 1px 0 #ffffff0c;
+}
+.sidebar nav a.active svg {
+  filter: drop-shadow(0 0 7px #45d5f223);
+}
+button,
+.button {
+  border-color: var(--studio-stroke);
+  border-top-color: var(--studio-rim);
+  border-radius: var(--radius-sm);
+  font-weight: 650;
+  letter-spacing: -0.012em;
+  background: var(--liquid-reflection), var(--studio-field);
+  box-shadow: inset 0 1px 0 #ffffff08;
+  transition:
+    transform var(--motion-fast) var(--studio-ease-press),
+    background-color var(--motion-fast) var(--ease),
+    border-color var(--motion-fast) var(--ease),
+    box-shadow var(--motion-normal) var(--ease),
+    color var(--motion-fast) var(--ease);
+  touch-action: manipulation;
+}
+html[data-theme] .primary,
+html[data-theme] .primary:hover {
+  background: linear-gradient(
+    145deg,
+    var(--studio-action-top),
+    var(--studio-action-bottom)
+  );
+  border-color: transparent;
+  border-top-color: #ffffff55;
+  color: var(--studio-action-ink);
+  box-shadow:
+    inset 0 1px 0 #ffffff4a,
+    0 5px 20px #0bb4d519;
+}
+html[data-theme] .primary:hover {
+  box-shadow:
+    inset 0 1px 0 #ffffff70,
+    0 7px 24px #0bb4d52b;
+}
+button:not(:disabled):active,
+.button:active {
+  transform: translateY(1px) scale(0.98);
+  transition-duration: var(--motion-fast);
+}
+.icon-button {
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 14px;
+}
+input,
+select,
+textarea {
+  border-color: var(--studio-stroke);
+  background: var(--studio-field);
+  border-radius: var(--radius-sm);
+  box-shadow: inset 0 1px 3px #00000010;
+  transition:
+    border-color var(--motion-fast) var(--ease),
+    box-shadow var(--motion-fast) var(--ease),
+    background-color var(--motion-fast) var(--ease);
+  caret-color: var(--primary);
+}
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--primary);
+}
+:where(input, select, textarea):focus-visible {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--studio-tint);
+}
+:where(button, a, input, select, textarea, summary):focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+html[data-theme] :is(.overview-search > .search-box, .work-search) {
+  border-color: var(--studio-stroke);
+  background: var(--glass-bg);
+  border-radius: 17px;
+  box-shadow: inset 0 1px 0 #ffffff09;
+}
+.work-search:focus-within,
+.overview-search:focus-within > .search-box {
+  border-color: var(--primary);
+}
+html[data-theme] :is(.overview-search-results, .command-results) {
+  background: var(--studio-elevated);
+  border-color: var(--studio-stroke);
+}
+html[data-theme]
+  :is(.work-filters, .branch-buttons, .agenda-filters)
+  button[aria-pressed="true"],
+html[data-theme] .tabs button[aria-selected="true"] {
+  background: var(--studio-tint);
+  color: var(--primary);
+  border-color: var(--primary);
+  box-shadow: inset 0 1px 0 #ffffff10;
+}
+.work-filters button,
+.branch-buttons button {
+  border-radius: 14px;
+}
+.count {
+  font-variant-numeric: tabular-nums;
+  border-radius: 8px;
+}
+.personal-section-title h2 {
+  font-weight: 700;
+  letter-spacing: -0.035em;
+}
+.personal-shortcuts > a {
+  transition:
+    transform var(--motion-normal) var(--ease),
+    border-color var(--motion-fast) var(--ease),
+    box-shadow var(--motion-normal) var(--ease);
+}
+.personal-shortcuts > a > svg {
+  box-sizing: content-box;
+  padding: 8px;
+  border: 1px solid var(--studio-stroke);
+  border-radius: 13px;
+  color: var(--primary);
+  background: var(--studio-icon-fill);
+}
+.personal-shortcuts strong {
+  font-size: 32px;
+  font-weight: 720;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.065em;
+  align-self: center;
+}
+.personal-shortcuts span {
+  font-size: 14px;
+  font-weight: 650;
+}
+html[data-theme] .personal-shortcuts > a:first-child {
+  background:
+    linear-gradient(140deg, var(--studio-tint), transparent 80%),
+    var(--liquid-reflection), var(--studio-surface);
+}
+.work-card {
+  transition:
+    border-color var(--motion-fast) var(--ease),
+    box-shadow var(--motion-normal) var(--ease);
+}
+.work-company-link strong {
+  font-size: 18px;
+  font-weight: 710;
+  letter-spacing: -0.035em;
+}
+.work-company-link small {
+  margin-top: 5px;
+  font-size: 12px;
+}
+.work-kind {
+  font-weight: 600;
+}
+.work-date {
+  font-size: 12px;
+}
+.work-content {
+  font-size: 15px;
+  line-height: 1.75;
+}
+.work-open {
+  border: 1px solid var(--studio-stroke);
+  border-radius: 12px;
+  background: var(--studio-tint);
+  padding: 0 12px;
+  margin-top: 6px;
+  color: var(--primary);
+  font-weight: 650;
+}
+.work-open,
+.work-company-link {
+  transition:
+    transform var(--motion-fast) var(--studio-ease-press),
+    background-color var(--motion-fast) var(--ease),
+    border-color var(--motion-fast) var(--ease);
+}
+.work-open:active,
+.work-company-link:active,
+.personal-shortcuts > a:active {
+  transform: scale(0.985);
+}
+.work-open svg,
+.work-company-link > svg {
+  transition: transform var(--motion-fast) var(--ease);
+}
+.work-card--completed {
+  border-style: solid;
+}
+.work-card--completed .work-kind {
+  color: var(--success);
+}
+.personal-overview,
+.work-list {
+  animation: studio-enter var(--motion-slow) var(--ease) both;
+}
+html[data-theme] .prospect-card {
+  border-radius: 22px;
+}
+.company-avatar,
+.profile-avatar,
+.section-icon,
+.more-menu-icon {
+  background:
+    linear-gradient(140deg, var(--studio-tint), transparent),
+    var(--studio-field);
+  color: var(--primary);
+  border: 1px solid var(--studio-stroke);
+  border-radius: 14px;
+}
+.company-title {
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+.company-meta {
+  line-height: 1.6;
+}
+.note-item {
+  border-radius: 16px;
+  padding: 16px;
+  background: var(--studio-tint);
+  border: 1px solid var(--studio-stroke);
+}
+.note-item > p {
+  font-size: 15px;
+  line-height: 1.75;
+}
+.overview-section-heading .section-number {
+  background: var(--studio-tint);
+  border-color: var(--studio-stroke);
+  color: var(--primary);
+  border-radius: 10px;
+}
+html[data-theme] .modal-content {
+  background: var(--liquid-reflection), var(--studio-elevated);
+  border-color: var(--studio-stroke);
+  border-top-color: var(--studio-rim);
+  box-shadow:
+    0 28px 100px #00000045,
+    inset 0 1px 0 #ffffff1c;
+}
+.modal-heading h2 {
+  font-weight: 710;
+  letter-spacing: -0.035em;
+}
+.modal-content[data-state="open"] {
+  animation: studio-dialog-in var(--motion-slow) var(--ease) both;
+}
+.modal-content[data-state="closed"] {
+  animation: studio-dialog-out var(--motion-fast) var(--studio-ease-press) both;
+}
+.modal-overlay {
+  background: #02081499;
+}
+html[data-theme] .toast:not(.error) {
+  background: var(--studio-elevated);
+  border-color: var(--studio-stroke);
+  box-shadow: var(--studio-chrome-shadow);
+}
+.toast {
+  border-radius: 18px;
+}
+.status-banner {
+  font-size: 12px;
+  border-bottom-color: var(--studio-stroke);
+  background: var(--studio-tint);
+}
+.more-menu a {
+  border-radius: 16px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .personal-shortcuts > a:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary);
+    box-shadow: var(--studio-chrome-shadow);
+  }
+  .work-card:hover,
+  html[data-theme] .prospect-card:hover {
+    border-color: var(--studio-rim);
+    box-shadow: var(--studio-chrome-shadow);
+  }
+  .work-open:hover > svg,
+  .work-company-link:hover > svg {
+    transform: translate(2px, -2px);
+  }
+  .sidebar nav a:not(.active):hover {
+    transform: translateX(2px);
+  }
+}
+@media (max-width: 700px) {
+  :root {
+    --liquid-blur: 2px;
+    --type-title: 32px;
+  }
+  .page-header p {
+    font-size: 13px;
+  }
+  .overview-header p {
+    font-size: 12px;
+  }
+  .overview-tools > button {
+    font-size: 11px;
+  }
+  .personal-shortcuts > a {
+    border-radius: 21px;
+  }
+  .personal-shortcuts strong {
+    font-size: clamp(24px, 7vw, 30px);
+  }
+  .personal-shortcuts > a > svg {
+    padding: 6px;
+    border-radius: 11px;
+  }
+  .work-company-link strong {
+    font-size: 18px;
+  }
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+  html[data-theme] .mobile-nav {
+    border-radius: 25px;
+  }
+  .mobile-nav a,
+  .mobile-nav .mobile-more {
+    border-radius: 18px;
+    transition:
+      transform var(--motion-fast) var(--ease),
+      background-color var(--motion-normal) var(--ease);
+  }
+  .mobile-nav a.active,
+  .mobile-nav .mobile-more.active {
+    color: var(--primary);
+    background: var(--studio-tint);
+  }
+  .mobile-nav a.active > svg,
+  .mobile-nav .mobile-more.active > svg {
+    border-color: transparent;
+    background: transparent;
+    box-shadow: none;
+  }
+  .mobile-nav a:active,
+  .mobile-nav button:active {
+    transform: scale(0.96);
+  }
+  html[data-theme] .modal-content {
+    top: auto;
+    bottom: 10px;
+    transform: translateX(-50%);
+    max-height: calc(100dvh - 24px);
+    border-radius: 28px;
+    padding-top: 28px;
+  }
+
+  .modal-content[data-state="open"] {
+    animation-name: studio-sheet-in;
+  }
+  .modal-content[data-state="closed"] {
+    animation-name: studio-sheet-out;
+  }
+  .work-open {
+    min-height: 44px;
+  }
+}
+@keyframes studio-enter {
+  from {
+    transform: translateY(5px);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes studio-dialog-in {
+  from {
+    transform: translate(-50%, -48%) scale(0.98);
+  }
+  to {
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+@keyframes studio-dialog-out {
+  from {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  to {
+    transform: translate(-50%, -49%) scale(0.99);
+  }
+}
+@keyframes studio-sheet-in {
+  from {
+    transform: translate(-50%, 18px) scale(0.985);
+  }
+  to {
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+@keyframes studio-sheet-out {
+  from {
+    transform: translate(-50%, 0) scale(1);
+  }
+  to {
+    transform: translate(-50%, 12px) scale(0.99);
+  }
+}
+@supports not (
+  (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
+) {
+  html[data-theme]
+    :is(
+      .panel,
+      .work-card,
+      .sidebar,
+      .topbar,
+      .mobile-nav,
+      .mobile-sales-bar,
+      .modal-content
+    ),
+  html[data-theme] .personal-shortcuts > a {
+    background: var(--studio-surface-solid) !important;
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  :root,
+  [data-theme="dark"] {
+    --studio-surface: var(--studio-surface-solid);
+    --studio-field: var(--studio-surface-solid);
+    --glass-bg: var(--studio-surface-solid);
+    --liquid-reflection: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+  .personal-shortcuts > a:hover,
+  .personal-shortcuts > a:active,
+  .work-open:active,
+  .work-company-link:active,
+  .sidebar nav a:hover,
+  button:not(:disabled):active,
+  .button:active,
+  .mobile-nav a:active,
+  .mobile-nav button:active {
+    transform: none;
+  }
+}
