@@ -104,6 +104,16 @@ Er is geen analytics, datasynchronisatie, server-API of AI-verzoek. Applicatieco
 
 ## Gecontroleerde oplevering
 
-Op 28 oktober 2026 geslaagd: 41 unit-/componenttests, 8 Chromium-browsertests, strict TypeScript, productiebuild en Prettier-controle. De browserchecks omvatten mobiele CRUD-flows, lokale conceptinvoer, zoeken/filters, belpositie, Excel-werkbladen, herstel in een nieuwe browsercontext, offline herladen, PWA-update met behoud van gegevens en geautomatiseerde axe-controles voor de hoofdschermen en een dialoog. Automatische toegankelijkheidscontroles vervangen geen handmatige screenreadercontrole.
+Op 28 oktober 2026 geslaagd: 41 unit-/componenttests, 9 Chromium-browsertests, strict TypeScript, productiebuild en Prettier-controle. De browserchecks omvatten mobiele CRUD-flows, lokale conceptinvoer, zoeken/filters, belpositie, Excel-werkbladen, herstel in een nieuwe browsercontext, offline herladen, PWA-update met behoud van gegevens en geautomatiseerde axe-controles voor de hoofdschermen en een dialoog. Automatische toegankelijkheidscontroles vervangen geen handmatige screenreadercontrole.
 
 De productie-dependencies hebben geen bekende meldingen in `npm audit --omit=dev`. De volledige dependencyboom heeft vier lage meldingen in de indirecte `deepmerge`/Workbox-buildketen. De voorgestelde automatische oplossing zou de PWA-plugin naar een incompatibele oude versie terugzetten; die downgrade is niet toegepast. Deze buildtools worden niet als onderdeel van de applicatie naar de browser gestuurd. Er wordt geen volledige productierijpheid voor ongeteste doelapparaten of externe hosting geclaimd.
+
+## Amocean.ai-interface en navigatie
+
+De interface gebruikt de aangeleverde Amocean.ai-huisstijl: near-black `#05070D`, oceaanblauw `#0B1B33`, off-white `#F5F7FA`, cyaan `#22D3EE` en groen voor functionele status. Nieuwe profielen openen standaard donker; een bestaande expliciete thema-instelling blijft behouden. De lichte variant blijft beschikbaar. Er zijn geen video’s, externe fonts, canvas-effecten of animatiebibliotheken toegevoegd.
+
+Het dashboard geeft prioriteit aan de volgende actie en agenda. De desktopdirectory gebruikt compacte bedrijfsregels; op mobiel blijven de bel- en statusacties direct bedienbaar. De kleurvariabelen staan bovenaan `src/index.css`.
+
+Routes worden afzonderlijk geladen via `src/app/routes.ts`. Interne links laden hun routecode alvast bij aanwijzen, toetsenbordfocus of aanraken; bij databesparingsmodus gebeurt dat niet. Een mislukte voorlaadactie blokkeert een latere navigatie niet. De globale bedrijvenzoeklijst wordt alleen opgevraagd wanneer snelzoeken open is. Gedeelde filters staan in een eigen component, waardoor belmodus niet de volledige directory hoeft te laden. Zoeken houdt de invoer responsief via deferred rendering en gebruikt een notitie-index bij het filteren.
+
+React, IndexedDB en validatie hebben aparte vendorbestanden met inhoudshashes voor hergebruik bij volgende releases. Dit verkleint de opnieuw te downloaden code bij een UI-update; het is geen claim dat de totale eerste download evenredig kleiner is. De browsercheck controleert dat routecode bij focus/hover vooraf laadt, bij de klik wordt hergebruikt en andere routes niet onnodig meelaadt.

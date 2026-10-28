@@ -1,3 +1,4 @@
+import { useMinute } from "../hooks/useMinute";
 import { useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { Plus, CalendarDays } from "lucide-react";
@@ -8,6 +9,7 @@ import { FollowUpForm } from "../components/forms";
 import { FollowUpRow } from "../components/ProspectWorkspace";
 import { Empty } from "../components/ui";
 export default function Followups() {
+  useMinute();
   const data = useLiveQuery(async () => ({
     p: await db.prospects.toArray(),
     f: (await db.followups.toArray()).sort((a, b) =>

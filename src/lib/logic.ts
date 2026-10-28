@@ -91,22 +91,27 @@ export function filterProspects(
   today = new Date(),
 ): Prospect[] {
   const terms = normalizeText(filters.search).split(" ").filter(Boolean);
+  const withNotes = filters.notes
+    ? new Set(notes.map((note) => note.prospectId))
+    : null;
   return prospects
     .filter((p) => {
-      const hay = normalizeText(
-        [
-          p.companyName,
-          p.city,
-          p.sector,
-          p.phone,
-          p.phoneNormalized,
-          p.website,
-          p.valueProposition,
-          p.contactPerson,
-          ...p.tags,
-        ].join(" "),
-      );
-      const hasNotes = notes.some((n) => n.prospectId === p.id);
+      const hay = terms.length
+        ? normalizeText(
+            [
+              p.companyName,
+              p.city,
+              p.sector,
+              p.phone,
+              p.phoneNormalized,
+              p.website,
+              p.valueProposition,
+              p.contactPerson,
+              ...p.tags,
+            ].join(" "),
+          )
+        : "";
+      const hasNotes = withNotes?.has(p.id) ?? false;
       const day = p.followUpAt
         ? groupFollowUp(
             { dueAt: p.followUpAt, completedAt: null } as FollowUp,

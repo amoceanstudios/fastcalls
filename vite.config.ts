@@ -12,8 +12,8 @@ export default defineConfig({
         short_name: "Amocean",
         description: "Jouw lokale saleswerkstation",
         lang: "nl",
-        theme_color: "#0e2828",
-        background_color: "#f6f7f4",
+        theme_color: "#05070d",
+        background_color: "#05070d",
         display: "standalone",
         start_url: "/",
         scope: "/",
@@ -46,6 +46,27 @@ export default defineConfig({
       },
     }),
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        // Keep vendor hashes stable across UI releases instead of redownloading
+        // React, persistence and validation with every application code change.
+        manualChunks(id) {
+          if (!id.includes("/node_modules/")) return;
+          if (
+            /\/node_modules\/(react|react-dom|react-router|react-router-dom|scheduler)\//.test(
+              id,
+            )
+          )
+            return "framework";
+          if (/\/node_modules\/(dexie|dexie-react-hooks)\//.test(id))
+            return "storage";
+          if (id.includes("/node_modules/zod/")) return "validation";
+          if (id.includes("/node_modules/@radix-ui/")) return "primitives";
+        },
+      },
+    },
+  },
   test: {
     environment: "jsdom",
     setupFiles: ["./src/tests/setup.ts"],

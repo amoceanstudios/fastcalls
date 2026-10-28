@@ -1,5 +1,4 @@
 import {
-  lazy,
   Suspense,
   useEffect,
   useState,
@@ -29,19 +28,21 @@ import {
   ShieldCheck,
   ChevronRight,
   Search,
-  X,
   RefreshCw,
 } from "lucide-react";
 import { db } from "./db/database";
 import { defaultProfile, type Profile } from "./lib/models";
 import { FeedbackProvider, Modal } from "./components/ui";
-const Dashboard = lazy(() => import("./pages/Dashboard"));
-const Directory = lazy(() => import("./pages/Directory"));
-const Detail = lazy(() => import("./pages/Detail"));
-const Calling = lazy(() => import("./pages/Calling"));
-const Followups = lazy(() => import("./pages/Followups"));
-const DataCenter = lazy(() => import("./pages/DataCenter"));
-const Settings = lazy(() => import("./pages/Settings"));
+import { screens, preloadRoute } from "./app/routes";
+const {
+  dashboard: { Component: Dashboard },
+  prospects: { Component: Directory },
+  detail: { Component: Detail },
+  calling: { Component: Calling },
+  followups: { Component: Followups },
+  data: { Component: DataCenter },
+  settings: { Component: Settings },
+} = screens;
 const nav = [
   { to: "/", label: "Overzicht", icon: LayoutDashboard },
   { to: "/prospects", label: "Prospects", icon: Building2 },
@@ -77,17 +78,6 @@ class ErrorBoundary extends Component<
   }
 }
 function Shell() {
-  // Keep calendar-day reminders fresh while a workstation remains open overnight.
-  const [, tick] = useState(0);
-  useEffect(() => {
-    const refresh = () => tick((value) => value + 1);
-    const timer = setInterval(refresh, 60000);
-    document.addEventListener("visibilitychange", refresh);
-    return () => {
-      clearInterval(timer);
-      document.removeEventListener("visibilitychange", refresh);
-    };
-  }, []);
   const location = useLocation();
   const profile = useLiveQuery(() => db.settings.get("profile"));
   const p = (profile?.value as Profile) ?? defaultProfile;
@@ -95,7 +85,11 @@ function Shell() {
   const [command, setCommand] = useState(false);
   const [query, setQuery] = useState("");
   const [swError, setSwError] = useState(false);
-  const companies = useLiveQuery(() => db.prospects.toArray()) ?? [];
+  const companies =
+    useLiveQuery(
+      async () => (command ? await db.prospects.toArray() : []),
+      [command],
+    ) ?? [];
   const {
     needRefresh: [needRefresh],
     offlineReady: [offlineReady],
@@ -150,6 +144,19 @@ function Shell() {
     window.addEventListener("keydown", key);
     return () => window.removeEventListener("keydown", key);
   }, []);
+  const warmRoute = (event: { target: EventTarget | null }) => {
+    const connection = (
+      navigator as Navigator & { connection?: { saveData?: boolean } }
+    ).connection;
+    if (connection?.saveData || !(event.target instanceof Element)) return;
+    const link = event.target.closest("a[href]");
+    if (
+      !(link instanceof HTMLAnchorElement) ||
+      link.origin !== window.location.origin
+    )
+      return;
+    preloadRoute(link.pathname);
+  };
   const page =
     nav.find((n) =>
       n.to === "/"
@@ -157,28 +164,25 @@ function Shell() {
         : location.pathname.startsWith(n.to),
     )?.label ?? "Instellingen";
   return (
-    <div className="app-shell">
+    <div
+      className="app-shell"
+      onPointerOver={warmRoute}
+      onFocusCapture={warmRoute}
+      onTouchStart={warmRoute}
+    >
       <a className="skip-link" href="#main">
         Naar inhoud
       </a>
       <aside className="sidebar">
         <Link className="brand" to="/">
-          <span className="brand-symbol">
-            a
-            <span>
-              <ArrowUpRight size={25} />
-            </span>
-          </span>
           <div>
             <strong>
-              amocean<span>®</span>
+              amocean<span className="brand-ai">.ai</span>
             </strong>
             <small>PROSPECT OS</small>
           </div>
         </Link>
-        <div className="workspace-label">
-          WERKSTATION <span>01</span>
-        </div>
+        <div className="workspace-label">WERKRUIMTE</div>
         <nav aria-label="Hoofdnavigatie">
           {nav.map((n) => (
             <NavLink key={n.to} to={n.to} end={n.to === "/"}>
@@ -189,11 +193,6 @@ function Shell() {
           ))}
         </nav>
         <div className="sidebar-bottom">
-          <div className="local-card">
-            <ShieldCheck size={18} />
-            <strong>Lokaal. Persoonlijk. Van u.</strong>
-            <p>Uw kansen blijven op dit apparaat. Ook offline aan het werk.</p>
-          </div>
           <NavLink to="/settings" className="settings-link">
             <SettingsIcon size={18} />
             Instellingen
@@ -231,7 +230,6 @@ function Shell() {
               <span>Zoeken</span>
               <kbd>⌘ K</kbd>
             </button>
-            <span className="top-avatar">A</span>
           </div>
         </header>
         {!online && (
@@ -258,9 +256,15 @@ function Shell() {
         <main id="main" tabIndex={-1}>
           <Suspense
             fallback={
-              <p className="loading" role="status">
-                Uw werkstation laden…
-              </p>
+              <div
+                className="route-loading"
+                role="status"
+                aria-label="Pagina laden"
+              >
+                <div />
+                <div />
+                <div />
+              </div>
             }
           >
             <Routes>
@@ -284,7 +288,7 @@ function Shell() {
           </Suspense>
           <footer className="main-footer">
             <span>AMOCEAN PROSPECT OS</span>
-            <span>Minder administratie. Meer gesprekken.</span>
+            <span>Uw gegevens blijven op dit apparaat.</span>
             <span>
               {offlineReady ? "Offline gereed" : "Lokaal werkstation"}{" "}
               <span className="live-dot" />
@@ -329,7 +333,11 @@ function Shell() {
               )
               .slice(0, 8)
               .map((p) => (
-                <Link key={p.id} to={`/prospects/${p.id}`}>
+                <Link
+                  key={p.id}
+                  to={`/prospects/${p.id}`}
+                  onClick={() => setCommand(false)}
+                >
                   {p.companyName}
                   <ArrowUpRight size={16} />
                 </Link>

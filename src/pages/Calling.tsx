@@ -1,3 +1,4 @@
+import { useMinute } from "../hooks/useMinute";
 import { useState, useEffect } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { Link } from "react-router-dom";
@@ -18,7 +19,7 @@ import {
 } from "../lib/logic";
 import { Empty, usePreference } from "../components/ui";
 import ProspectWorkspace from "../components/ProspectWorkspace";
-import { FilterBar } from "./Directory";
+import { FilterBar } from "../components/FilterBar";
 import { defaultProfile } from "../lib/models";
 type Session = {
   ids: string[];
@@ -35,6 +36,7 @@ const newSession = (): Session => ({
   reviewed: [],
 });
 export default function Calling() {
+  useMinute();
   const data = useLiveQuery(async () => ({
     p: await db.prospects.toArray(),
     f: await db.followups.toArray(),

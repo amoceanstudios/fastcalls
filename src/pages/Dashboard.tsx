@@ -1,70 +1,92 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
   ArrowUpRight,
   Phone,
-  Users,
   CalendarDays,
-  Check,
   Plus,
   Upload,
-  Target,
+  Check,
 } from "lucide-react";
 import { isSameDay } from "date-fns";
 import { db } from "../db/database";
 import { callingQueue, dateLabel, groupFollowUp } from "../lib/logic";
-import { CallButton, Empty, StatusBadge, ProspectCard } from "../components/ui";
+import { CallButton, StatusBadge } from "../components/ui";
 import { ProspectForm } from "../components/forms";
+import { useMinute } from "../hooks/useMinute";
+
 export default function Dashboard() {
+  const minute = useMinute();
   const data = useLiveQuery(async () => ({
-    p: await db.prospects.toArray(),
-    f: await db.followups.toArray(),
-    a: await db.activities.orderBy("createdAt").reverse().limit(5).toArray(),
-    n: await db.notes.orderBy("createdAt").reverse().limit(3).toArray(),
-    c: await db.calls.toArray(),
+    prospects: await db.prospects.toArray(),
+    followups: await db.followups.toArray(),
+    activities: await db.activities
+      .orderBy("createdAt")
+      .reverse()
+      .limit(5)
+      .toArray(),
+    notes: await db.notes.orderBy("createdAt").reverse().limit(3).toArray(),
+    calls: await db.calls.toArray(),
   }));
   const [add, setAdd] = useState(false);
   const [search, setSearch] = useState("");
-  if (!data) return <p role="status">Uw werkstation laden…</p>;
-  const { p, f, a, n, c } = data;
-  const queue = callingQueue(p, f);
-  const next = queue[0];
-  const today = new Date();
-  const todayCalls = c.filter((c) => isSameDay(new Date(c.initiatedAt), today));
-  const confirmed = todayCalls.filter((c) => c.outcome);
-  const tasks = f
-    .filter(
-      (f) =>
-        !f.completedAt &&
-        ["Vandaag", "Achterstallig"].includes(groupFollowUp(f)),
-    )
-    .sort((a, b) => a.dueAt.localeCompare(b.dueAt));
+  const summary = useMemo(() => {
+    if (!data) return null;
+    const today = new Date();
+    const { prospects, followups, calls } = data;
+    const todayCalls = calls.filter((call) =>
+      isSameDay(new Date(call.initiatedAt), today),
+    );
+    const confirmed = todayCalls.filter((call) => call.outcome);
+    const tasks = followups
+      .filter(
+        (task) =>
+          !task.completedAt &&
+          ["Vandaag", "Achterstallig"].includes(groupFollowUp(task)),
+      )
+      .sort((a, b) => a.dueAt.localeCompare(b.dueAt));
+    return {
+      next: callingQueue(prospects, followups)[0],
+      tasks,
+      todayCalls,
+      confirmed,
+      conversations: confirmed.filter((call) =>
+        ["SPOKEN", "INTERESTED", "CALLBACK"].includes(call.outcome!),
+      ).length,
+      completed: followups.filter(
+        (task) =>
+          task.completedAt && isSameDay(new Date(task.completedAt), today),
+      ).length,
+      companyNames: new Map(
+        prospects.map((prospect) => [prospect.id, prospect.companyName]),
+      ),
+      nextScheduled: followups
+        .filter((task) => !task.completedAt && new Date(task.dueAt) > today)
+        .sort((a, b) => a.dueAt.localeCompare(b.dueAt))[0],
+      overdue: tasks.filter((task) => groupFollowUp(task) === "Achterstallig")
+        .length,
+    };
+  }, [data, minute]);
+  if (!data || !summary) return <p role="status">Overzicht laden…</p>;
+  const { prospects, activities, notes } = data;
+  const { next, tasks, todayCalls, confirmed, companyNames } = summary;
   const metrics = [
+    { label: "Prospects", value: prospects.length, to: "/prospects" },
     {
-      label: "Totaal prospects",
-      value: p.length,
-      icon: Users,
-      to: "/prospects",
-    },
-    {
-      label: "Nog te bellen",
-      value: p.filter((p) => p.status === "TO_CALL").length,
-      icon: Phone,
+      label: "Te bellen",
+      value: prospects.filter((p) => p.status === "TO_CALL").length,
       to: "/prospects?status=TO_CALL",
     },
     {
       label: "Geïnteresseerd",
-      value: p.filter((p) => p.status === "INTERESTED").length,
-      icon: Target,
+      value: prospects.filter((p) => p.status === "INTERESTED").length,
       to: "/prospects?status=INTERESTED",
     },
     {
       label: "Opvolging vandaag",
-      value: f.filter((f) => !f.completedAt && groupFollowUp(f) === "Vandaag")
-        .length,
-      icon: CalendarDays,
+      value: tasks.length - summary.overdue,
       to: "/followups",
     },
   ];
@@ -72,176 +94,206 @@ export default function Dashboard() {
     <>
       <header className="page-header">
         <div>
-          <div className="eyebrow">UW SALESWERKSTATION</div>
-          <h1>
-            Een goed gesprek
-            <br className="mobile-break" /> begint hier
-            <span className="accent">.</span>
-          </h1>
-          <p>Meer aandacht voor uw prospects. Minder administratie.</p>
+          <div className="eyebrow">WERKRUIMTE</div>
+          <h1>Overzicht</h1>
+          <p>Uw volgende actie, op één plek.</p>
         </div>
         <button className="primary" onClick={() => setAdd(true)}>
-          <Plus size={17} />
+          <Plus size={16} />
           Prospect toevoegen
         </button>
       </header>
       <div className="metric-grid">
-        {metrics.map((m) => (
-          <Link className="metric" key={m.label} to={m.to}>
-            <div>
-              <span>{m.label}</span>
-              <m.icon size={18} />
-            </div>
-            <strong>{m.value}</strong>
-            <span className="metric-link">
-              Bekijk overzicht <ArrowUpRight size={14} />
-            </span>
+        {metrics.map((metric) => (
+          <Link className="metric" key={metric.label} to={metric.to}>
+            <span className="metric-label">{metric.label}</span>
+            <strong>{metric.value}</strong>
+            <ArrowUpRight className="metric-arrow" size={15} />
           </Link>
         ))}
       </div>
-      {!p.length ? (
+      {!prospects.length ? (
         <section className="welcome-panel">
           <div className="welcome-copy">
-            <span className="eyebrow">KLAAR VOOR HET EERSTE GESPREK</span>
+            <span className="eyebrow">AAN DE SLAG</span>
             <h2>
-              Uw volgende kans
+              Uw eerste gesprek begint
               <br />
-              begint met een lijst.
+              met uw bedrijvenlijst.
             </h2>
             <p>
-              Importeer uw bedrijven uit Excel of CSV. Bel, maak notities en
-              houd elke vervolgstap bij — ook zonder internet.
+              Importeer Excel of CSV. Daarna staan bellen, notities en opvolging
+              direct klaar.
             </p>
-            <Link className="button lime" to="/data">
-              <Upload size={18} />
-              Importeer uw prospects <ArrowRight size={18} />
+            <Link className="button primary" to="/data">
+              <Upload size={16} />
+              Bedrijvenlijst importeren
+              <ArrowRight size={16} />
             </Link>
-            <span className="small">
-              Geen cloudopslag. Uw gegevens blijven op dit apparaat.
+            <span className="small muted">
+              Alle gegevens blijven op dit apparaat.
             </span>
           </div>
-          <div className="welcome-art" aria-hidden="true">
-            <div className="orbit orbit-one" />
-            <div className="orbit orbit-two" />
-            <div className="art-mark">
-              a
-              <span>
-                <ArrowUpRight size={90} />
-              </span>
+          <div className="onboarding-steps" aria-label="Aan de slag">
+            <div>
+              <span>01</span>
+              <p>
+                <strong>Importeer</strong>Uw bedrijven, ongewijzigd overgenomen.
+              </p>
             </div>
-            <span className="art-caption">
-              Van eerste contact
-              <br />
-              naar nieuwe mogelijkheden.
-            </span>
+            <div>
+              <span>02</span>
+              <p>
+                <strong>Maak contact</strong>Bel direct vanuit een
+                bedrijfsprofiel.
+              </p>
+            </div>
+            <div>
+              <span>03</span>
+              <p>
+                <strong>Volg op</strong>Leg het gesprek en de volgende stap
+                vast.
+              </p>
+            </div>
           </div>
         </section>
       ) : (
         <section className="next-panel">
-          <div>
-            <span className="eyebrow">
-              VOLGENDE PROSPECT <span className="live-dot" />
-            </span>
+          <div className="next-copy">
+            <div className="section-title">
+              <span className="eyebrow">VOLGENDE ACTIE</span>
+              {next && <StatusBadge p={next} />}
+            </div>
             {next ? (
               <>
                 <h2>{next.companyName}</h2>
-                <p className="muted">
+                <p className="muted next-meta">
                   {[next.city, next.sector].filter(Boolean).join(" · ")}
                 </p>
-                <StatusBadge p={next} />
                 <p className="opportunity">
                   {next.valueProposition ||
                     "Bekijk het bedrijf en verken samen de mogelijkheden."}
                 </p>
-                <div className="action-row">
+                <div className="action-row wrap">
                   <CallButton p={next} large />
-                  <Link
-                    className="button ghost-light"
-                    to={`/prospects/${next.id}`}
-                  >
-                    Bekijk bedrijf <ArrowUpRight size={17} />
+                  <Link className="button" to={`/prospects/${next.id}`}>
+                    Bekijk bedrijf
+                    <ArrowUpRight size={16} />
                   </Link>
                 </div>
               </>
             ) : (
               <>
                 <h2>Alles bijgewerkt.</h2>
-                <p>Er staan nu geen bedrijven klaar voor een belactie.</p>
-                <Link to="/followups" className="button lime">
-                  Bekijk opvolgingen <ArrowRight size={17} />
+                <p className="muted">
+                  Er staan nu geen prospects klaar voor een belactie.
+                </p>
+                <Link className="button" to="/followups">
+                  Bekijk opvolgingen
+                  <ArrowRight size={16} />
                 </Link>
               </>
             )}
           </div>
-          <div className="next-side">
-            <div className="round-phone">
-              <Phone size={40} />
+          <Link className="calling-shortcut" to="/calling">
+            <span className="shortcut-icon">
+              <Phone size={19} />
+            </span>
+            <div>
+              <strong>Belmodus</strong>
+              <p>
+                Eén bedrijf tegelijk.
+                <br />
+                Alle aandacht voor het gesprek.
+              </p>
             </div>
-            <p>
-              Eén gesprek kan
-              <br />
-              het verschil maken.
-            </p>
-            <Link to="/calling">
-              Open belmodus <ArrowRight size={16} />
-            </Link>
-          </div>
+            <ArrowUpRight size={18} />
+          </Link>
         </section>
       )}
       <div className="dashboard-columns">
         <section className="panel">
           <div className="section-title">
             <h2>
-              Vandaag op de agenda <span className="count">{tasks.length}</span>
+              Op de agenda<span className="count">{tasks.length}</span>
             </h2>
-            <Link to="/followups" aria-label="Alle opvolgingen">
-              <ArrowUpRight size={20} />
+            <Link className="text-link" to="/followups">
+              Alles bekijken
+              <ArrowUpRight size={14} />
             </Link>
           </div>
           {tasks.length ? (
-            tasks.slice(0, 5).map((t) => (
+            tasks.slice(0, 5).map((task) => (
               <Link
-                to={`/prospects/${t.prospectId}`}
-                key={t.id}
                 className="task-row"
+                key={task.id}
+                to={`/prospects/${task.prospectId}`}
               >
                 <span
-                  className={`task-dot ${groupFollowUp(t) === "Achterstallig" ? "overdue" : ""}`}
+                  className={`task-dot ${groupFollowUp(task) === "Achterstallig" ? "overdue" : ""}`}
                 >
-                  <CalendarDays size={17} />
+                  <CalendarDays size={16} />
                 </span>
                 <span>
-                  <strong>
-                    {p.find((p) => p.id === t.prospectId)?.companyName}
-                  </strong>
+                  <strong>{companyNames.get(task.prospectId)}</strong>
                   <small>
-                    {t.title} · {dateLabel(t.dueAt, t.dateOnly)}
+                    {task.title} · {dateLabel(task.dueAt, task.dateOnly)}
                   </small>
                 </span>
-                <ArrowUpRight size={16} />
+                <ArrowUpRight size={15} />
               </Link>
             ))
           ) : (
             <div className="quiet-empty">
-              <Check size={26} />
-              <strong>Een lege agenda. Een frisse start.</strong>
-              <p>Geplande opvolgingen verschijnen hier.</p>
+              <Check size={20} />
+              <strong>Geen opvolgingen voor vandaag</strong>
+              <p>Plan een volgende stap vanuit een bedrijf.</p>
             </div>
           )}
-          <Link className="text-link" to="/followups">
-            Alle opvolgingen bekijken <ArrowRight size={15} />
-          </Link>
+          {!tasks.length && summary.nextScheduled && (
+            <Link
+              className="task-row"
+              to={`/prospects/${summary.nextScheduled.prospectId}`}
+            >
+              <span className="task-dot">
+                <CalendarDays size={16} />
+              </span>
+              <span>
+                <strong>
+                  {companyNames.get(summary.nextScheduled.prospectId)}
+                </strong>
+                <small>
+                  Volgende opvolging ·{" "}
+                  {dateLabel(
+                    summary.nextScheduled.dueAt,
+                    summary.nextScheduled.dateOnly,
+                  )}
+                </small>
+              </span>
+              <ArrowUpRight size={15} />
+            </Link>
+          )}
+          {summary.overdue > 0 && (
+            <p className="small red">{summary.overdue} achterstallig</p>
+          )}
         </section>
         <section className="panel progress-panel">
           <div className="section-title">
-            <h2>Uw dag in beweging</h2>
-            <span className="badge neutral">Vandaag</span>
+            <h2>Vandaag</h2>
+            <span className="small muted">Uw activiteit</span>
           </div>
           <div className="progress-number">
             {todayCalls.length}
             <span>belacties gestart</span>
           </div>
-          <div className="progress-track">
+          <div
+            className="progress-track"
+            role="progressbar"
+            aria-label="Bevestigde beluitkomsten"
+            aria-valuemin={0}
+            aria-valuemax={Math.max(todayCalls.length, 1)}
+            aria-valuenow={confirmed.length}
+          >
             <div
               style={{
                 width: `${todayCalls.length ? (confirmed.length / todayCalls.length) * 100 : 0}%`,
@@ -249,47 +301,32 @@ export default function Dashboard() {
             />
           </div>
           <p className="small muted">
-            {confirmed.length} uitkomsten bevestigd ·{" "}
+            {confirmed.length} bevestigd ·{" "}
             {todayCalls.length - confirmed.length} nog vast te leggen
           </p>
           <div className="progress-stats">
             <span>
-              <strong>
-                {
-                  confirmed.filter((c) =>
-                    ["SPOKEN", "INTERESTED", "CALLBACK"].includes(c.outcome!),
-                  ).length
-                }
-              </strong>
-              Gesprekken
+              <strong>{summary.conversations}</strong>Gesprekken
+            </span>
+            <span>
+              <strong>{summary.completed}</strong>Opvolgingen afgerond
             </span>
             <span>
               <strong>
-                {
-                  f.filter(
-                    (f) =>
-                      f.completedAt &&
-                      isSameDay(new Date(f.completedAt), today),
-                  ).length
-                }
+                {prospects.filter((p) => p.status === "PROPOSAL_SENT").length}
               </strong>
-              Opvolgingen afgerond
+              Offertes (totaal)
             </span>
           </div>
-          <Link className="button full" to="/calling">
-            <Phone size={16} />
-            Ga naar belmodus <ArrowRight size={16} />
-          </Link>
         </section>
       </div>
       <div className="dashboard-columns">
         <section className="panel">
           <div className="section-title">
             <h2>Recente activiteit</h2>
-            <span className="small muted">Lokaal bijgehouden</span>
           </div>
-          {a.length ? (
-            a.map((item) => (
+          {activities.length ? (
+            activities.map((item) => (
               <Link
                 className="activity-row"
                 key={item.id}
@@ -297,9 +334,7 @@ export default function Dashboard() {
               >
                 <span className="activity-dot" />
                 <div>
-                  <strong>
-                    {p.find((p) => p.id === item.prospectId)?.companyName}
-                  </strong>
+                  <strong>{companyNames.get(item.prospectId)}</strong>
                   <p>{item.description}</p>
                   <small>{dateLabel(item.createdAt)}</small>
                 </div>
@@ -307,82 +342,56 @@ export default function Dashboard() {
             ))
           ) : (
             <p className="muted small padded">
-              Uw eerste acties verschijnen hier. Alles wordt automatisch lokaal
-              bewaard.
+              Uw eerste acties verschijnen hier.
             </p>
           )}
         </section>
         <section className="panel">
           <div className="section-title">
             <h2>Snel naar een bedrijf</h2>
-            <Users size={18} />
           </div>
           <input
             aria-label="Snel prospects zoeken"
-            placeholder="Zoek op bedrijfsnaam of plaats…"
+            placeholder="Bedrijfsnaam of plaats…"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(event) => setSearch(event.target.value)}
           />
-          {search ? (
-            p
+          {search &&
+            prospects
               .filter((p) =>
                 `${p.companyName} ${p.city}`
                   .toLowerCase()
                   .includes(search.toLowerCase()),
               )
               .slice(0, 5)
-              .map((p) => (
-                <Link className="task-row" key={p.id} to={`/prospects/${p.id}`}>
-                  <strong>{p.companyName}</strong>
-                  <ArrowRight size={16} />
+              .map((prospect) => (
+                <Link
+                  className="task-row"
+                  key={prospect.id}
+                  to={`/prospects/${prospect.id}`}
+                >
+                  <strong>{prospect.companyName}</strong>
+                  <ArrowRight size={15} />
                 </Link>
-              ))
-          ) : (
-            <div className="mini-stats">
-              <span>
-                <b>{p.filter((p) => p.lastContactedAt).length}</b> bedrijven
-                gesproken
-              </span>
-              <span>
-                <b>{p.filter((p) => p.status === "PROPOSAL_SENT").length}</b>{" "}
-                offertes gestuurd
-              </span>
-              <span>
-                <b>
-                  {
-                    f.filter(
-                      (f) =>
-                        !f.completedAt && groupFollowUp(f) === "Achterstallig",
-                    ).length
-                  }
-                </b>{" "}
-                achterstallige opvolgingen
-              </span>
-            </div>
-          )}
-          {n.length > 0 && (
+              ))}
+          {notes[0] && (
             <>
               <h3>Laatste notitie</h3>
               <Link
-                to={`/prospects/${n[0].prospectId}`}
                 className="note-preview"
+                to={`/prospects/${notes[0].prospectId}`}
               >
-                {n[0].content}
+                {notes[0].content}
               </Link>
             </>
           )}
+          {!notes.length && !search && (
+            <p className="muted small padded">
+              Zoek direct in uw eigen bedrijvenlijst.
+            </p>
+          )}
         </section>
       </div>
-      {f.some((f) => !f.completedAt) && (
-        <p className="small muted">
-          Volgende geplande opvolging:{" "}
-          {dateLabel(
-            [...f]
-              .filter((f) => !f.completedAt)
-              .sort((a, b) => a.dueAt.localeCompare(b.dueAt))[0].dueAt,
-          )}
-        </p>
-      )}
       {add && <ProspectForm onClose={() => setAdd(false)} />}
     </>
   );

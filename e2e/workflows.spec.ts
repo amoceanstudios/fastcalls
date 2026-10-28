@@ -105,7 +105,7 @@ test("mobiele import, notities, status, opvolging, e-mail, back-up en offline he
   await context.setOffline(true);
   await page.reload();
   await expect(
-    page.getByRole("heading", { name: /Een goed gesprek/ }),
+    page.getByRole("heading", { name: "Overzicht", exact: true }),
   ).toBeVisible();
   await page.goto("/prospects");
   await expect(
@@ -435,9 +435,13 @@ test("contrast in de resterende schermen en de desktopzijbalk", async ({
     )
     .toEqual([]);
   await page.goto("/settings");
-  await page.getByRole("combobox", { name: "Kleurthema" }).selectOption("dark");
+  await page
+    .getByRole("combobox", { name: "Kleurthema" })
+    .selectOption("light");
   await page.getByRole("button", { name: "Instellingen opslaan" }).click();
-  await expect.soft(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await expect
+    .soft(page.locator("html"))
+    .toHaveAttribute("data-theme", "light");
   await page.goto("/");
   scan = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
@@ -453,4 +457,78 @@ test("contrast in de resterende schermen en de desktopzijbalk", async ({
       })),
     )
     .toEqual([]);
+});
+
+test("routenavigatie laadt alleen de bedoelde route alvast en hergebruikt die", async ({
+  browser,
+}) => {
+  const context = await browser.newContext({
+    baseURL: "http://127.0.0.1:4173",
+    viewport: { width: 1440, height: 1000 },
+    serviceWorkers: "block",
+  });
+  try {
+    const page = await context.newPage();
+    const routes: string[] = [];
+    const errors: string[] = [];
+    page.on("response", (response) => {
+      const url = new URL(response.url());
+      if (/\/(Directory|Calling|DataCenter)-.*\.js$/.test(url.pathname))
+        routes.push(url.pathname);
+    });
+    page.on("pageerror", (error) => errors.push(error.message));
+    await page.goto("/");
+    await expect(
+      page.getByRole("heading", { name: "Overzicht", exact: true }),
+    ).toBeVisible();
+    expect(routes).toEqual([]);
+    const prospects = page
+      .getByRole("navigation", { name: "Hoofdnavigatie" })
+      .getByRole("link", { name: "Prospects", exact: true });
+    await prospects.hover();
+    await expect
+      .poll(() => routes.filter((path) => path.includes("/Directory-")).length)
+      .toBe(1);
+    expect(routes.some((path) => /\/(Calling|DataCenter)-/.test(path))).toBe(
+      false,
+    );
+    await prospects.click();
+    await expect(
+      page.getByRole("heading", { name: "Uw prospects." }),
+    ).toBeVisible();
+    expect(routes.filter((path) => path.includes("/Directory-"))).toHaveLength(
+      1,
+    );
+    await page.goBack();
+    await expect(
+      page.getByRole("heading", { name: "Overzicht", exact: true }),
+    ).toBeVisible();
+    expect(errors).toEqual([]);
+    await importData(page);
+    await page
+      .getByRole("button", { name: "Snel zoeken", exact: true })
+      .click();
+    await page
+      .getByRole("textbox", { name: "Snel zoeken", exact: true })
+      .fill("Fictief Browsertest");
+    await page
+      .getByRole("dialog")
+      .getByRole("link", { name: "Fictief Browsertest BV" })
+      .click();
+    await expect(
+      page.getByRole("heading", {
+        name: "Fictief Browsertest BV",
+        exact: true,
+      }),
+    ).toBeVisible();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await page.keyboard.press("Control+k");
+    await page
+      .getByRole("dialog")
+      .getByRole("link", { name: "Fictief Browsertest BV" })
+      .click();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+  } finally {
+    await context.close();
+  }
 });

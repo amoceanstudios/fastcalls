@@ -1,4 +1,5 @@
 import {
+  memo,
   createContext,
   useContext,
   useState,
@@ -182,7 +183,7 @@ export function CallButton({
     </a>
   );
 }
-export function ProspectCard({ p }: { p: Prospect }) {
+export const ProspectCard = memo(function ProspectCard({ p }: { p: Prospect }) {
   const action = useAction();
   return (
     <article className="prospect-card">
@@ -211,7 +212,7 @@ export function ProspectCard({ p }: { p: Prospect }) {
         {p.companyName}
         <ArrowUpRight size={18} />
       </Link>
-      <p className="muted small">
+      <p className="company-meta muted small">
         {[p.city, p.sector].filter(Boolean).join(" · ") ||
           "Geen sector of plaats"}
       </p>
@@ -225,13 +226,13 @@ export function ProspectCard({ p }: { p: Prospect }) {
         </span>
       </div>
       {p.followUpAt && (
-        <p className="small muted">
+        <p className="card-followup small muted">
           Opvolging: {new Date(p.followUpAt).toLocaleDateString("nl-NL")}
         </p>
       )}
     </article>
   );
-}
+});
 export function Confirm({
   title,
   children,

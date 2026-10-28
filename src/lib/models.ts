@@ -135,7 +135,7 @@ export const defaultProfile: Profile = {
   phone: "",
   website: "https://amocean.nl",
   signature: "",
-  theme: "system",
+  theme: "dark",
   density: "comfortable",
   tone: "Zakelijk",
   template: 0,
