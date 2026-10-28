@@ -1028,3 +1028,67 @@ html[data-theme] .overview-history {
 .overview-search-results strong {
   overflow-wrap: anywhere;
 }
+
+.branch-picker {
+  margin-bottom: 1.5rem;
+}
+.branch-picker h2 {
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+}
+.branch-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.branch-buttons button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+.branch-buttons button[aria-pressed="true"] {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.branch-group-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+}
+.branch-group-toggle input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+}
+.branch-groups {
+  display: grid;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+}
+.branch-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-size: 1.15rem;
+  margin-bottom: 1rem;
+}
+.company-contact-lines {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0.5rem 0;
+}
+.company-contact-lines a {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  font-size: 0.875rem;
+}
+.company-contact-lines a span {
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.company-contact-lines svg {
+  flex-shrink: 0;
+}

@@ -104,6 +104,7 @@ export function filterProspects(
               p.sector,
               p.phone,
               p.phoneNormalized,
+              p.email,
               p.website,
               p.valueProposition,
               p.contactPerson,

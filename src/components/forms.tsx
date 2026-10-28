@@ -47,6 +47,7 @@ export function ProspectForm({
       <input
         required={key === "companyName"}
         type={type}
+        list={key === "sector" ? "company-sectors" : undefined}
         value={p[key]}
         onChange={(e) => setP({ ...p, [key]: e.target.value })}
       />
@@ -128,6 +129,22 @@ export function ProspectForm({
             )}
           </div>
         </div>
+        <datalist id="company-sectors">
+          {[
+            "Horeca",
+            "Beauty & wellness",
+            "Bouw & installatie",
+            "Winkels & retail",
+            "Zakelijke dienstverlening",
+            "Zorg",
+            "Sport & fitness",
+            "Automotive",
+            "Vastgoed",
+            "Techniek",
+          ].map((sector) => (
+            <option key={sector} value={sector} />
+          ))}
+        </datalist>
         <div className="form-grid">
           {field("companyName", "Bedrijfsnaam")}
           {field("city", "Plaats")}

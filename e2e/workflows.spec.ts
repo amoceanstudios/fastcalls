@@ -824,3 +824,48 @@ test("de primaire belactie staat op mobiel boven de vaste navigatie zonder scrol
     ),
   ).toBe(true);
 });
+
+test("bedrijven per branche, vindbare contactgegevens en bewaarde weergave", async ({
+  page,
+}) => {
+  await importData(page);
+  await page.goto("/prospects");
+  await expect(
+    page.getByRole("heading", { name: "Bouw", exact: false }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Techniek", exact: false }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Techniek 1", exact: true }).click();
+  await expect(
+    page.getByRole("link", { name: "Fictief Browsertest BV", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Fictief Tweede BV", exact: true }),
+  ).toHaveCount(0);
+  await page.getByRole("checkbox", { name: "Groeperen per branche" }).uncheck();
+  await page.reload();
+  await expect(
+    page.getByRole("checkbox", { name: "Groeperen per branche" }),
+  ).not.toBeChecked();
+  await openCompany(page);
+  await page.getByRole("button", { name: "Bewerken", exact: true }).click();
+  await page
+    .getByRole("textbox", { name: "E-mail", exact: true })
+    .fill("contact@example.org");
+  await page.getByRole("button", { name: "Opslaan", exact: true }).click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await page.goto("/prospects");
+  await expect(
+    page.getByRole("link", {
+      name: "Mail Fictief Browsertest BV: contact@example.org",
+    }),
+  ).toHaveAttribute("href", "mailto:contact@example.org");
+  await page
+    .getByRole("textbox", { name: "Prospects doorzoeken" })
+    .fill("contact@example.org");
+  await expect(page.locator(".prospect-card")).toHaveCount(1);
+  await expect(
+    page.getByRole("link", { name: "0301234567", exact: true }),
+  ).toHaveAttribute("href", "tel:+31301234567");
+});

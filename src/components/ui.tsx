@@ -15,6 +15,8 @@ import {
   ArrowUpRight,
   Phone,
   Building2,
+  Mail,
+  Globe,
 } from "lucide-react";
 import { Illustration, type IllustrationKind } from "./Illustration";
 import { CompanyMark } from "./CompanyMark";
@@ -24,6 +26,7 @@ import {
   statuses,
   priorities,
   normalizePhone,
+  safeUrl,
 } from "../lib/models";
 import { initiateCall, changeStatus, db } from "../db/database";
 type Notice = { message: string; error: boolean };
@@ -273,6 +276,32 @@ export const ProspectCard = memo(function ProspectCard({ p }: { p: Prospect }) {
       <p className="card-opportunity">
         {p.valueProposition || "Voeg een kans voor Amocean toe."}
       </p>
+      <div className="company-contact-lines">
+        {p.email ? (
+          <a
+            href={`mailto:${p.email}`}
+            aria-label={`Mail ${p.companyName}: ${p.email}`}
+          >
+            <Mail size={15} aria-hidden="true" />
+            <span>{p.email}</span>
+          </a>
+        ) : (
+          <span className="small muted">E-mailadres nog niet bekend</span>
+        )}
+        {safeUrl(p.website) && (
+          <a
+            href={safeUrl(p.website)}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Globe size={15} aria-hidden="true" />
+            <span>{new URL(safeUrl(p.website)).hostname}</span>
+          </a>
+        )}
+        {p.contactPerson && (
+          <p className="small muted">Contactpersoon: {p.contactPerson}</p>
+        )}
+      </div>
       <div className="card-footer">
         <CallButton p={p} />
         <span className={`priority ${p.priority.toLowerCase()}`}>
