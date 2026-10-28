@@ -54,7 +54,7 @@ export function ProspectForm({
   );
   return (
     <Modal
-      title={prospect ? "Bedrijfsgegevens bewerken" : "Prospect toevoegen"}
+      title={prospect ? "Bedrijfsgegevens bewerken" : "Bedrijf toevoegen"}
       open
       onClose={onClose}
     >

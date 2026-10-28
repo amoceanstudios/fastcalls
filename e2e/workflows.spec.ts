@@ -484,7 +484,7 @@ test("routenavigatie laadt alleen de bedoelde route alvast en hergebruikt die", 
     expect(routes).toEqual([]);
     const prospects = page
       .getByRole("navigation", { name: "Hoofdnavigatie" })
-      .getByRole("link", { name: "Prospects", exact: true });
+      .getByRole("link", { name: "Bedrijven", exact: true });
     await prospects.hover();
     await expect
       .poll(() => routes.filter((path) => path.includes("/Directory-")).length)
@@ -494,7 +494,7 @@ test("routenavigatie laadt alleen de bedoelde route alvast en hergebruikt die", 
     );
     await prospects.click();
     await expect(
-      page.getByRole("heading", { name: "Uw prospects." }),
+      page.getByRole("heading", { name: "Bedrijven", exact: true }),
     ).toBeVisible();
     expect(routes.filter((path) => path.includes("/Directory-"))).toHaveLength(
       1,
@@ -593,7 +593,7 @@ test("micro-animaties blijven kort en verminderde beweging houdt alle inhoud toe
 }) => {
   await page.goto("/");
   const trigger = page.getByRole("button", {
-    name: "Prospect toevoegen",
+    name: "Bedrijf toevoegen",
     exact: true,
   });
   await expect(trigger).toBeVisible();
@@ -647,7 +647,7 @@ test("micro-animaties blijven kort en verminderde beweging houdt alle inhoud toe
       ),
     ).toBe(true);
     await reduced
-      .getByRole("button", { name: "Prospect toevoegen", exact: true })
+      .getByRole("button", { name: "Bedrijf toevoegen", exact: true })
       .click();
     await expect(reduced.getByRole("dialog")).toBeVisible();
     expect(
@@ -663,4 +663,164 @@ test("micro-animaties blijven kort en verminderde beweging houdt alle inhoud toe
   } finally {
     await context.close();
   }
+});
+
+test("dagoverzicht prioriteert opvolging, rondt taken af en opent duidelijke statusfilters", async ({
+  page,
+}) => {
+  await importData(page);
+  await openCompany(page);
+  await page.getByRole("button", { name: "Bewerken", exact: true }).click();
+  await page
+    .getByRole("combobox", { name: "Status", exact: true })
+    .selectOption("INTERESTED");
+  await page.getByRole("button", { name: "Opslaan", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Opvolging plannen", exact: true })
+    .last()
+    .click();
+  await page
+    .getByRole("textbox", { name: "Onderwerp", exact: true })
+    .fill("Achterstallig testmoment");
+  const yesterday = await page.evaluate(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  });
+  await page.getByLabel("Datum", { exact: true }).fill(yesterday);
+  await page.getByRole("button", { name: "Opvolging opslaan" }).click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await page.goto("/prospects");
+  await page.getByRole("link", { name: "Fictief Tweede BV" }).click();
+  const phone = page
+    .locator(".mobile-sales-bar")
+    .getByRole("link", { name: "Bel nu" });
+  await phone.evaluate((el) =>
+    el.addEventListener("click", (event) => event.preventDefault()),
+  );
+  await phone.click();
+  await expect(
+    page.getByRole("heading", { name: "Hoe is het gesprek verlopen?" }),
+  ).toBeVisible();
+  await page
+    .getByRole("navigation", { name: "Mobiele navigatie" })
+    .getByRole("link", { name: "Overzicht", exact: true })
+    .click();
+  await expect(
+    page
+      .getByRole("region", { name: "Uw volgende belactie" })
+      .getByRole("heading", { name: "Fictief Browsertest BV", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Achterstallige opvolging", { exact: true }),
+  ).toBeVisible();
+  await expect(page.locator(".pending-call-notice")).toContainText(
+    "Fictief Tweede BV",
+  );
+  await page.getByRole("button", { name: /Te laat/ }).click();
+  await page
+    .getByRole("button", {
+      name: "Opvolging afronden: Achterstallig testmoment",
+    })
+    .click();
+  await expect(page.locator(".overview-task")).toHaveCount(0);
+  await page.reload();
+  await expect(
+    page
+      .getByRole("region", { name: "Uw volgende belactie" })
+      .getByRole("heading", { name: "Fictief Tweede BV", exact: true }),
+  ).toBeVisible();
+  await page
+    .locator(".pending-call-notice")
+    .getByRole("link", { name: /Uitkomst vastleggen/ })
+    .click();
+  await page.getByRole("button", { name: "Uitkomst bevestigen" }).click();
+  await page.goto("/");
+  await expect(page.locator(".pending-call-notice")).toHaveCount(0);
+  await expect(page.locator(".overview-progress")).toContainText(
+    "Gesprekken bevestigd",
+  );
+  await page
+    .getByRole("navigation", { name: "Mobiele navigatie" })
+    .getByRole("link", { name: "Bedrijven", exact: true })
+    .click();
+  await page.getByRole("button", { name: /Filters/ }).click();
+  await page
+    .getByRole("combobox", { name: "Plaats", exact: true })
+    .selectOption("Amersfoort");
+  await expect(
+    page.getByRole("link", { name: "Fictief Browsertest BV" }),
+  ).toHaveCount(0);
+  await page
+    .getByRole("navigation", { name: "Mobiele navigatie" })
+    .getByRole("link", { name: "Overzicht", exact: true })
+    .click();
+  await page
+    .locator(".status-stages")
+    .getByRole("link", { name: /Geïnteresseerd/ })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Bedrijven", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Fictief Browsertest BV" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Fictief Tweede BV" }),
+  ).toHaveCount(0);
+});
+
+test("mobiele navigatie houdt dagelijkse acties vooraan en beheer bereikbaar via Meer", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const mobile = page.getByRole("navigation", { name: "Mobiele navigatie" });
+  await expect(mobile.getByRole("link")).toHaveCount(4);
+  const more = mobile.getByRole("button", { name: "Meer", exact: true });
+  await more.click();
+  await page
+    .getByRole("dialog", { name: "Meer", exact: true })
+    .getByRole("link", { name: /Instellingen/ })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Instellingen." }),
+  ).toBeVisible();
+  await expect(more).toHaveAttribute("aria-current", "page");
+  await more.click();
+  await page
+    .getByRole("dialog", { name: "Meer", exact: true })
+    .getByRole("link", { name: /Gegevens & back-ups/ })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Gegevens & back-ups." }),
+  ).toBeVisible();
+  await more.click();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(more).toBeFocused();
+});
+
+test("de primaire belactie staat op mobiel boven de vaste navigatie zonder scrollen", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 664 });
+  await importData(page);
+  await page.goto("/");
+  const call = page
+    .locator(".focus-actions")
+    .getByRole("link", { name: "Bel nu", exact: true });
+  await expect(call).toBeVisible();
+  const callRect = await call.boundingBox();
+  const navRect = await page
+    .getByRole("navigation", { name: "Mobiele navigatie" })
+    .boundingBox();
+  expect(callRect).not.toBeNull();
+  expect(navRect).not.toBeNull();
+  expect(callRect!.y + callRect!.height).toBeLessThanOrEqual(navRect!.y);
+  expect(await page.evaluate(() => scrollY)).toBe(0);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
 });

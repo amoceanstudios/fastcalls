@@ -1,6 +1,4 @@
-import { Reveal } from "../components/Reveal";
-import { Illustration } from "../components/Illustration";
-import { useMemo, useState } from "react";
+import { useDeferredValue, useMemo, useRef, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { Link } from "react-router-dom";
 import {
@@ -11,14 +9,27 @@ import {
   Plus,
   Upload,
   Check,
+  Search,
+  Clock3,
+  MessageSquare,
+  Activity,
+  ChevronDown,
+  CheckCheck,
+  ArrowDownToLine,
+  Settings2,
 } from "lucide-react";
-import { isSameDay } from "date-fns";
-import { db } from "../db/database";
-import { callingQueue, dateLabel, groupFollowUp } from "../lib/logic";
-import { CallButton, StatusBadge } from "../components/ui";
+import { db, saveFollowUp } from "../db/database";
+import { now, normalizeText, type FollowUp } from "../lib/models";
+import { summarizeDashboard } from "../lib/dashboard";
+import { dateLabel } from "../lib/logic";
+import { Reveal } from "../components/Reveal";
+import { Illustration } from "../components/Illustration";
+import { CompanyMark } from "../components/CompanyMark";
+import { CallButton, StatusBadge, useAction } from "../components/ui";
 import { ProspectForm } from "../components/forms";
 import { useMinute } from "../hooks/useMinute";
 
+type AgendaFilter = "all" | "overdue" | "today";
 export default function Dashboard() {
   const minute = useMinute();
   const data = useLiveQuery(async () => ({
@@ -34,371 +45,494 @@ export default function Dashboard() {
   }));
   const [add, setAdd] = useState(false);
   const [search, setSearch] = useState("");
-  const summary = useMemo(() => {
-    if (!data) return null;
-    const today = new Date();
-    const { prospects, followups, calls } = data;
-    const todayCalls = calls.filter((call) =>
-      isSameDay(new Date(call.initiatedAt), today),
-    );
-    const confirmed = todayCalls.filter((call) => call.outcome);
-    const tasks = followups
-      .filter(
-        (task) =>
-          !task.completedAt &&
-          ["Vandaag", "Achterstallig"].includes(groupFollowUp(task)),
-      )
-      .sort((a, b) => a.dueAt.localeCompare(b.dueAt));
-    return {
-      next: callingQueue(prospects, followups)[0],
-      tasks,
-      todayCalls,
-      confirmed,
-      conversations: confirmed.filter((call) =>
-        ["SPOKEN", "INTERESTED", "CALLBACK"].includes(call.outcome!),
-      ).length,
-      completed: followups.filter(
-        (task) =>
-          task.completedAt && isSameDay(new Date(task.completedAt), today),
-      ).length,
-      companyNames: new Map(
-        prospects.map((prospect) => [prospect.id, prospect.companyName]),
-      ),
-      nextScheduled: followups
-        .filter((task) => !task.completedAt && new Date(task.dueAt) > today)
-        .sort((a, b) => a.dueAt.localeCompare(b.dueAt))[0],
-      overdue: tasks.filter((task) => groupFollowUp(task) === "Achterstallig")
-        .length,
-    };
-  }, [data, minute]);
+  const deferredSearch = useDeferredValue(search);
+  const [filter, setFilter] = useState<AgendaFilter>("all");
+  const [busy, setBusy] = useState<string | null>(null);
+  const agendaTitle = useRef<HTMLHeadingElement>(null);
+  const action = useAction();
+  const summary = useMemo(
+    () => (data ? summarizeDashboard(data) : null),
+    [data, minute],
+  );
+  const results = useMemo(() => {
+    const term = normalizeText(deferredSearch);
+    return term && data
+      ? data.prospects
+          .filter((company) =>
+            normalizeText(
+              `${company.companyName} ${company.city} ${company.sector} ${company.phone} ${company.contactPerson}`,
+            ).includes(term),
+          )
+          .slice(0, 5)
+      : [];
+  }, [data, deferredSearch]);
   if (!data || !summary) return <p role="status">Overzicht laden…</p>;
   const { prospects, activities, notes } = data;
-  const { next, tasks, todayCalls, confirmed, companyNames } = summary;
-  const metrics = [
-    { label: "Prospects", value: prospects.length, to: "/prospects" },
-    {
-      label: "Te bellen",
-      value: prospects.filter((p) => p.status === "TO_CALL").length,
-      to: "/prospects?status=TO_CALL",
-    },
-    {
-      label: "Geïnteresseerd",
-      value: prospects.filter((p) => p.status === "INTERESTED").length,
-      to: "/prospects?status=INTERESTED",
-    },
-    {
-      label: "Opvolging vandaag",
-      value: tasks.length - summary.overdue,
-      to: "/followups",
-    },
+  const { next, companies, pendingCalls } = summary;
+  const agenda =
+    filter === "overdue"
+      ? summary.overdue
+      : filter === "today"
+        ? summary.dueToday
+        : summary.due;
+  const stages = [
+    { status: "TO_CALL" as const, label: "Nog te bellen" },
+    { status: "INTERESTED" as const, label: "Geïnteresseerd" },
+    { status: "PROPOSAL_SENT" as const, label: "Offerte gestuurd" },
+    { status: "CUSTOMER" as const, label: "Klant geworden" },
   ];
+  const complete = async (task: FollowUp) => {
+    setBusy(task.id);
+    const saved = await action(
+      () => saveFollowUp({ ...task, completedAt: now() }),
+      "Opvolging afgerond",
+    );
+    setBusy(null);
+    if (saved)
+      requestAnimationFrame(() =>
+        agendaTitle.current?.focus({ preventScroll: true }),
+      );
+  };
   return (
-    <>
-      <header className="page-header">
+    <div className="sales-overview">
+      <header className="page-header overview-header">
         <div>
-          <div className="eyebrow">WERKRUIMTE</div>
+          <div className="eyebrow">UW WERKDAG</div>
           <h1>Overzicht</h1>
-          <p>Uw volgende actie, op één plek.</p>
+          <p>
+            {new Intl.DateTimeFormat("nl-NL", {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+            }).format(new Date())}{" "}
+            <span aria-hidden="true">·</span> Dit vraagt uw aandacht.
+          </p>
         </div>
-        <button className="primary" onClick={() => setAdd(true)}>
-          <Plus size={16} />
-          Prospect toevoegen
-        </button>
+        <div
+          className={`overview-tools ${!prospects.length ? "overview-tools--empty" : ""}`}
+        >
+          {prospects.length > 0 && (
+            <div className="overview-search">
+              <label className="search-box">
+                <Search size={17} />
+                <input
+                  aria-label="Snel prospects zoeken"
+                  placeholder="Zoek een bedrijf…"
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                />
+              </label>
+              {search && (
+                <div
+                  className="overview-search-results"
+                  role="region"
+                  aria-label="Gevonden bedrijven"
+                >
+                  {results.length ? (
+                    results.map((company) => (
+                      <Link key={company.id} to={`/prospects/${company.id}`}>
+                        <span>
+                          <strong>{company.companyName}</strong>
+                          <small>{company.city}</small>
+                        </span>
+                        <ArrowUpRight size={16} />
+                      </Link>
+                    ))
+                  ) : (
+                    <p>Geen bedrijven gevonden.</p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+          <button onClick={() => setAdd(true)}>
+            <Plus size={16} />
+            Bedrijf toevoegen
+          </button>
+        </div>
       </header>
       {!prospects.length ? (
-        <Reveal className="welcome-panel">
-          <div className="welcome-copy">
-            <span className="eyebrow">AAN DE SLAG</span>
-            <h2>
-              Uw eerste gesprek begint
-              <br />
-              met uw bedrijvenlijst.
-            </h2>
-            <p>
-              Importeer Excel of CSV. Daarna staan bellen, notities en opvolging
-              direct klaar.
-            </p>
-            <Link className="button primary" to="/data">
-              <Upload size={16} />
-              Bedrijvenlijst importeren
-              <ArrowRight size={16} />
-            </Link>
-            <span className="small muted">
-              Alle gegevens blijven op dit apparaat.
-            </span>
-          </div>
-          <div className="onboarding-visual">
-            <Illustration kind="onboarding" />
-            <div className="onboarding-steps" aria-label="Aan de slag">
-              <div>
-                <span>01</span>
-                <p>
-                  <strong>Importeer</strong>Uw bedrijven, ongewijzigd
-                  overgenomen.
-                </p>
-              </div>
-              <div>
-                <span>02</span>
-                <p>
-                  <strong>Maak contact</strong>Bel direct vanuit een
-                  bedrijfsprofiel.
-                </p>
-              </div>
-              <div>
-                <span>03</span>
-                <p>
-                  <strong>Volg op</strong>Leg het gesprek en de volgende stap
-                  vast.
-                </p>
-              </div>
-            </div>
-          </div>
-        </Reveal>
-      ) : (
-        <Reveal className="next-panel">
-          <div className="next-copy">
-            <div className="section-title">
-              <span className="eyebrow">VOLGENDE ACTIE</span>
-              {next && <StatusBadge p={next} />}
-            </div>
-            {next ? (
-              <>
-                <h2>{next.companyName}</h2>
-                <p className="muted next-meta">
-                  {[next.city, next.sector].filter(Boolean).join(" · ")}
-                </p>
-                <p className="opportunity">
-                  {next.valueProposition ||
-                    "Bekijk het bedrijf en verken samen de mogelijkheden."}
-                </p>
-                <div className="action-row wrap">
-                  <CallButton p={next} large />
-                  <Link className="button" to={`/prospects/${next.id}`}>
-                    Bekijk bedrijf
-                    <ArrowUpRight size={16} />
-                  </Link>
-                </div>
-              </>
-            ) : (
-              <>
-                <h2>Alles bijgewerkt.</h2>
-                <p className="muted">
-                  Er staan nu geen prospects klaar voor een belactie.
-                </p>
-                <Link className="button" to="/followups">
-                  Bekijk opvolgingen
-                  <ArrowRight size={16} />
-                </Link>
-              </>
-            )}
-          </div>
-          <Link className="calling-shortcut" to="/calling">
-            <span className="shortcut-icon">
-              <Phone size={19} />
-            </span>
-            <div>
-              <strong>Belmodus</strong>
-              <p>
-                Eén bedrijf tegelijk.
+        <>
+          <Reveal className="welcome-panel overview-welcome">
+            <div className="welcome-copy">
+              <span className="eyebrow">1 · UW EERSTE STAP</span>
+              <h2>
+                Uw bedrijvenlijst erin.
                 <br />
-                Alle aandacht voor het gesprek.
+                Uw werkdag op orde.
+              </h2>
+              <p>
+                Importeer uw Excel- of CSV-bestand. Daarna ziet u direct wie u
+                kunt bellen en wat opvolging vraagt.
               </p>
-            </div>
-            <ArrowUpRight size={18} />
-          </Link>
-        </Reveal>
-      )}
-      <div className="metric-grid">
-        {metrics.map((metric) => (
-          <Link className="metric" key={metric.label} to={metric.to}>
-            <span className="metric-label">{metric.label}</span>
-            <strong>{metric.value}</strong>
-            <ArrowUpRight className="metric-arrow" size={15} />
-          </Link>
-        ))}
-      </div>
-      <div className="dashboard-columns">
-        <Reveal className="panel">
-          <div className="section-title">
-            <h2>
-              Op de agenda<span className="count">{tasks.length}</span>
-            </h2>
-            <Link className="text-link" to="/followups">
-              Alles bekijken
-              <ArrowUpRight size={14} />
-            </Link>
-          </div>
-          {tasks.length ? (
-            tasks.slice(0, 5).map((task) => (
-              <Link
-                className="task-row"
-                key={task.id}
-                to={`/prospects/${task.prospectId}`}
-              >
-                <span
-                  className={`task-dot ${groupFollowUp(task) === "Achterstallig" ? "overdue" : ""}`}
-                >
-                  <CalendarDays size={16} />
-                </span>
-                <span>
-                  <strong>{companyNames.get(task.prospectId)}</strong>
-                  <small>
-                    {task.title} · {dateLabel(task.dueAt, task.dateOnly)}
-                  </small>
-                </span>
-                <ArrowUpRight size={15} />
+              <Link className="button primary large" to="/data">
+                <Upload size={18} />
+                Bedrijvenlijst importeren
+                <ArrowRight size={17} />
               </Link>
-            ))
-          ) : (
-            <div className="quiet-empty">
-              <Check size={20} />
-              <strong>Geen opvolgingen voor vandaag</strong>
-              <p>Plan een volgende stap vanuit een bedrijf.</p>
+              <span className="small muted">
+                Geen gegevens aangeleverd? Voeg ook handmatig een bedrijf toe.
+              </span>
             </div>
-          )}
-          {!tasks.length && summary.nextScheduled && (
-            <Link
-              className="task-row"
-              to={`/prospects/${summary.nextScheduled.prospectId}`}
-            >
-              <span className="task-dot">
-                <CalendarDays size={16} />
-              </span>
-              <span>
-                <strong>
-                  {companyNames.get(summary.nextScheduled.prospectId)}
-                </strong>
-                <small>
-                  Volgende opvolging ·{" "}
-                  {dateLabel(
-                    summary.nextScheduled.dueAt,
-                    summary.nextScheduled.dateOnly,
-                  )}
-                </small>
-              </span>
+            <div className="overview-welcome-art">
+              <Illustration kind="onboarding" />
+            </div>
+          </Reveal>
+          <div className="overview-setup" aria-label="Zo werkt uw dashboard">
+            {[
+              {
+                number: "01",
+                title: "Bedrijven toevoegen",
+                text: "Importeer uw eigen lijst of voeg een bedrijf toe.",
+                icon: Upload,
+              },
+              {
+                number: "02",
+                title: "Het volgende gesprek",
+                text: "Uw eerstvolgende belactie staat direct klaar.",
+                icon: Phone,
+              },
+              {
+                number: "03",
+                title: "Geen opvolging vergeten",
+                text: "Vandaag en achterstallig krijgen een eigen plek.",
+                icon: CalendarDays,
+              },
+            ].map((step) => (
+              <div key={step.number}>
+                <span className="setup-number">{step.number}</span>
+                <step.icon size={19} />
+                <h2>{step.title}</h2>
+                <p>{step.text}</p>
+              </div>
+            ))}
+          </div>
+          <div className="overview-setup-links">
+            <Link to="/settings">
+              <Settings2 size={16} />
+              Afzenderprofiel instellen
               <ArrowUpRight size={15} />
             </Link>
-          )}
-          {summary.overdue > 0 && (
-            <p className="small red">{summary.overdue} achterstallig</p>
-          )}
-        </Reveal>
-        <Reveal className="panel progress-panel">
-          <div className="section-title">
-            <h2>Vandaag</h2>
-            <span className="small muted">Uw activiteit</span>
+            <Link to="/data">
+              <ArrowDownToLine size={16} />
+              Gegevens en back-ups
+              <ArrowUpRight size={15} />
+            </Link>
           </div>
-          <div className="progress-number">
-            {todayCalls.length}
-            <span>belacties gestart</span>
-          </div>
-          <div
-            className="progress-track"
-            role="progressbar"
-            aria-label="Bevestigde beluitkomsten"
-            aria-valuemin={0}
-            aria-valuemax={Math.max(todayCalls.length, 1)}
-            aria-valuenow={confirmed.length}
-          >
-            <div
-              style={{
-                width: `${todayCalls.length ? (confirmed.length / todayCalls.length) * 100 : 0}%`,
-              }}
-            />
-          </div>
-          <p className="small muted">
-            {confirmed.length} bevestigd ·{" "}
-            {todayCalls.length - confirmed.length} nog vast te leggen
-          </p>
-          <div className="progress-stats">
-            <span>
-              <strong>{summary.conversations}</strong>Gesprekken
-            </span>
-            <span>
-              <strong>{summary.completed}</strong>Opvolgingen afgerond
-            </span>
-            <span>
-              <strong>
-                {prospects.filter((p) => p.status === "PROPOSAL_SENT").length}
-              </strong>
-              Offertes (totaal)
-            </span>
-          </div>
-        </Reveal>
-      </div>
-      <div className="dashboard-columns">
-        <Reveal className="panel">
-          <div className="section-title">
-            <h2>Recente activiteit</h2>
-          </div>
-          {activities.length ? (
-            activities.map((item) => (
+        </>
+      ) : (
+        <>
+          {pendingCalls[0] && (
+            <div className="pending-call-notice" role="status">
+              <span className="notice-symbol">
+                <MessageSquare size={19} />
+              </span>
+              <div>
+                <strong>
+                  {pendingCalls.length === 1
+                    ? "Eén beluitkomst staat nog open"
+                    : `${pendingCalls.length} beluitkomsten staan nog open`}
+                </strong>
+                <p>
+                  {companies.get(pendingCalls[0].prospectId)?.companyName} · Leg
+                  vast wat er werkelijk is gebeurd.
+                </p>
+              </div>
               <Link
-                className="activity-row"
-                key={item.id}
-                to={`/prospects/${item.prospectId}`}
+                className="button"
+                to={`/prospects/${pendingCalls[0].prospectId}`}
               >
-                <span className="activity-dot" />
-                <div>
-                  <strong>{companyNames.get(item.prospectId)}</strong>
-                  <p>{item.description}</p>
-                  <small>{dateLabel(item.createdAt)}</small>
+                Uitkomst vastleggen
+                <ArrowRight size={15} />
+              </Link>
+            </div>
+          )}
+          <div className="overview-workspace">
+            <Reveal
+              className="panel focus-company"
+              aria-label="Uw volgende belactie"
+            >
+              <div className="overview-section-heading">
+                <span className="section-number">01</span>
+                <h2>Wie belt u nu?</h2>
+                {next && <StatusBadge p={next} />}
+              </div>
+              {next ? (
+                <>
+                  <div className="focus-company-name">
+                    <CompanyMark p={next} />
+                    <div>
+                      <span className="focus-reason">
+                        <span /> {summary.reason}
+                      </span>
+                      <h3>{next.companyName}</h3>
+                      <p>
+                        {[next.city, next.sector].filter(Boolean).join(" · ") ||
+                          "Bedrijfsgegevens nog aanvullen"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="focus-actions">
+                    <CallButton p={next} large />
+                    <Link className="button" to={`/prospects/${next.id}`}>
+                      Open bedrijfsprofiel
+                      <ArrowUpRight size={16} />
+                    </Link>
+                  </div>
+                  <div className="focus-opportunity">
+                    <span>KANS VOOR AMOCEAN</span>
+                    <p>
+                      {next.valueProposition ||
+                        "Open het bedrijf om de mogelijkheden en contactgegevens aan te vullen."}
+                    </p>
+                  </div>
+                  <div className="focus-footer">
+                    <span>
+                      {summary.queue.length}{" "}
+                      {summary.queue.length === 1 ? "bedrijf" : "bedrijven"} in
+                      uw belrij
+                    </span>
+                    <Link to="/calling">
+                      Verder in belmodus
+                      <ArrowRight size={15} />
+                    </Link>
+                  </div>
+                </>
+              ) : (
+                <div className="focus-empty">
+                  <Illustration kind="success" />
+                  <h3>Uw belrij is bijgewerkt.</h3>
+                  <p>Er staat nu geen bedrijf klaar voor een belactie.</p>
+                  <Link className="button" to="/prospects">
+                    Bekijk alle bedrijven
+                    <ArrowRight size={16} />
+                  </Link>
                 </div>
-              </Link>
-            ))
-          ) : (
-            <p className="muted small padded">
-              Uw eerste acties verschijnen hier.
-            </p>
-          )}
-        </Reveal>
-        <Reveal className="panel">
-          <div className="section-title">
-            <h2>Snel naar een bedrijf</h2>
-          </div>
-          <input
-            aria-label="Snel prospects zoeken"
-            placeholder="Bedrijfsnaam of plaats…"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-          />
-          {search &&
-            prospects
-              .filter((p) =>
-                `${p.companyName} ${p.city}`
-                  .toLowerCase()
-                  .includes(search.toLowerCase()),
-              )
-              .slice(0, 5)
-              .map((prospect) => (
-                <Link
-                  className="task-row"
-                  key={prospect.id}
-                  to={`/prospects/${prospect.id}`}
-                >
-                  <strong>{prospect.companyName}</strong>
-                  <ArrowRight size={15} />
+              )}
+            </Reveal>
+            <Reveal
+              className="panel overview-agenda"
+              aria-label="Uw opvolgingen"
+            >
+              <div className="overview-section-heading">
+                <span className="section-number">02</span>
+                <h2 ref={agendaTitle} tabIndex={-1}>
+                  Wat volgt u op?
+                </h2>
+                <Link className="text-link" to="/followups">
+                  Agenda
+                  <ArrowUpRight size={14} />
                 </Link>
-              ))}
-          {notes[0] && (
-            <>
-              <h3>Laatste notitie</h3>
-              <Link
-                className="note-preview"
-                to={`/prospects/${notes[0].prospectId}`}
+              </div>
+              <div
+                className="agenda-filters"
+                role="group"
+                aria-label="Opvolgingen filteren"
               >
-                {notes[0].content}
+                {(
+                  [
+                    { key: "all", label: "Alles", count: summary.due.length },
+                    {
+                      key: "overdue",
+                      label: "Te laat",
+                      count: summary.overdue.length,
+                    },
+                    {
+                      key: "today",
+                      label: "Vandaag",
+                      count: summary.dueToday.length,
+                    },
+                  ] as const
+                ).map((item) => (
+                  <button
+                    key={item.key}
+                    aria-pressed={filter === item.key}
+                    onClick={() => setFilter(item.key)}
+                  >
+                    {item.label}
+                    <span>{item.count}</span>
+                  </button>
+                ))}
+              </div>
+              <div className="agenda-items">
+                {agenda.length ? (
+                  agenda.slice(0, 5).map((task) => {
+                    const late = summary.overdue.some(
+                      (item) => item.id === task.id,
+                    );
+                    return (
+                      <div className="overview-task" key={task.id}>
+                        <button
+                          className="check-button"
+                          disabled={busy !== null}
+                          aria-label={`Opvolging afronden: ${task.title}`}
+                          onClick={() => void complete(task)}
+                        >
+                          <Check size={14} />
+                        </button>
+                        <Link to={`/prospects/${task.prospectId}`}>
+                          <strong>
+                            {companies.get(task.prospectId)?.companyName}
+                          </strong>
+                          <span>{task.title}</span>
+                        </Link>
+                        <span className={`task-when ${late ? "late" : ""}`}>
+                          {late
+                            ? new Intl.DateTimeFormat("nl-NL", {
+                                day: "numeric",
+                                month: "short",
+                              }).format(new Date(task.dueAt))
+                            : task.dateOnly
+                              ? "Hele dag"
+                              : new Intl.DateTimeFormat("nl-NL", {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                }).format(new Date(task.dueAt))}
+                        </span>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="agenda-empty">
+                    <CheckCheck size={24} />
+                    <strong>
+                      {filter === "overdue"
+                        ? "Geen achterstallige opvolgingen"
+                        : filter === "today"
+                          ? "Geen opvolgingen voor vandaag"
+                          : "Alles bijgewerkt voor vandaag"}
+                    </strong>
+                    <p>
+                      {summary.upcoming
+                        ? `Volgende: ${companies.get(summary.upcoming.prospectId)?.companyName} · ${dateLabel(summary.upcoming.dueAt, summary.upcoming.dateOnly)}`
+                        : "Plan een vervolgstap vanuit een bedrijfsprofiel."}
+                    </p>
+                  </div>
+                )}
+              </div>
+              <Link className="agenda-footer" to="/followups">
+                {summary.due.length > 5
+                  ? `Alle ${summary.due.length} openstaande opvolgingen`
+                  : "Alle opvolgingen bekijken"}
+                <ArrowRight size={15} />
               </Link>
-            </>
-          )}
-          {!notes.length && !search && (
-            <p className="muted small padded">
-              Zoek direct in uw eigen bedrijvenlijst.
-            </p>
-          )}
-        </Reveal>
-      </div>
+            </Reveal>
+          </div>
+          <div className="overview-bottom">
+            <Reveal className="panel overview-pipeline">
+              <div className="overview-section-heading">
+                <h2>Bedrijfsstatussen</h2>
+                <Link className="text-link" to="/prospects">
+                  {prospects.length === 1
+                    ? "1 bedrijf"
+                    : `Alle ${prospects.length} bedrijven`}
+                  <ArrowUpRight size={14} />
+                </Link>
+              </div>
+              <div className="status-stages">
+                {stages.map((stage) => (
+                  <Link
+                    to={`/prospects?status=${stage.status}`}
+                    key={stage.status}
+                  >
+                    <span className={`stage-dot stage-${stage.status}`} />
+                    <strong>
+                      {summary.statusCounts.get(stage.status) ?? 0}
+                    </strong>
+                    <span>{stage.label}</span>
+                  </Link>
+                ))}
+              </div>
+            </Reveal>
+            <Reveal className="panel overview-progress">
+              <div className="overview-section-heading">
+                <h2>Vandaag gedaan</h2>
+                <span className="small muted">Uit uw historie</span>
+              </div>
+              <dl>
+                <div>
+                  <dt>Belacties gestart</dt>
+                  <dd>{summary.startedToday}</dd>
+                </div>
+                <div>
+                  <dt>Gesprekken bevestigd</dt>
+                  <dd>{summary.conversationsToday}</dd>
+                </div>
+                <div>
+                  <dt>Opvolgingen afgerond</dt>
+                  <dd>{summary.completedToday}</dd>
+                </div>
+              </dl>
+            </Reveal>
+          </div>
+          <Reveal className="panel overview-history">
+            <details>
+              <summary>
+                <Activity size={17} />
+                <span>Recente activiteit</span>
+                <span className="small muted">
+                  {activities.length}{" "}
+                  {activities.length === 1 ? "recente actie" : "recente acties"}
+                </span>
+                <ChevronDown size={16} />
+              </summary>
+              {activities.length ? (
+                activities.map((item) => (
+                  <Link
+                    className="activity-row"
+                    key={item.id}
+                    to={`/prospects/${item.prospectId}`}
+                  >
+                    <span className="activity-dot" />
+                    <div>
+                      <strong>
+                        {companies.get(item.prospectId)?.companyName}
+                      </strong>
+                      <p>{item.description}</p>
+                      <small>{dateLabel(item.createdAt)}</small>
+                    </div>
+                  </Link>
+                ))
+              ) : (
+                <p className="muted small padded">
+                  Uw eerste acties verschijnen hier.
+                </p>
+              )}
+            </details>
+            <details>
+              <summary>
+                <MessageSquare size={17} />
+                <span>Laatste notities</span>
+                <span className="small muted">
+                  {notes.length} recente{" "}
+                  {notes.length === 1 ? "notitie" : "notities"}
+                </span>
+                <ChevronDown size={16} />
+              </summary>
+              {notes.length ? (
+                notes.map((note) => (
+                  <Link
+                    className="history-note"
+                    to={`/prospects/${note.prospectId}`}
+                    key={note.id}
+                  >
+                    <strong>
+                      {companies.get(note.prospectId)?.companyName}
+                    </strong>
+                    <p>{note.content}</p>
+                    <small>{dateLabel(note.updatedAt)}</small>
+                  </Link>
+                ))
+              ) : (
+                <p className="muted small padded">
+                  Nog geen notities opgeslagen.
+                </p>
+              )}
+            </details>
+          </Reveal>
+        </>
+      )}
       {add && <ProspectForm onClose={() => setAdd(false)} />}
-    </>
+    </div>
   );
 }

@@ -31,6 +31,18 @@ De achtergrond bestaat uit statische CSS-gradients en grote gebogen contouren. E
 
 De sidebar, header en mobiele navigatie zweven los van de schermrand. De eerstvolgende actie staat boven de glazen statistiekkaarten. De lichte variant heeft transparante witte oppervlakken met donkere tekst. Ontbrekende filterondersteuning en de systeemvoorkeur voor verminderde transparantie krijgen een beter dekkende variant.
 
+## Informatiehiërarchie
+
+- Bovenaan één volgend bedrijf met de primaire belactie, naast de agenda voor vandaag en achterstallig.
+- Een nog onbekende beluitkomst wordt apart getoond, zonder een gesprek te suggereren.
+- Onder de werkruimte: filterbare bedrijfsstatussen en de werkelijk geregistreerde activiteit van vandaag.
+- Historie en notities blijven bereikbaar via duidelijke uitklapbare secties.
+- Geen bedrijven: één importstartpunt met korte uitleg, zonder lege statistiekvakken.
+- Desktop scheidt **Dagelijks** en **Beheer**; mobiel toont vier dagelijkse routes en **Meer** voor gegevens en instellingen.
+- De belactie staat op een normale mobiele viewport boven de vaste navigatie. Bedrijfsgegevens en opvolgingen blijven via directe links bereikbaar.
+
+De indeling staat in `src/styles/overview.css`; de berekeningen voor het dagoverzicht staan in `src/lib/dashboard.ts`.
+
 ## Beweging
 
 - Knoppen reageren met een kleine verplaatsing of schaalverandering.

@@ -29,6 +29,7 @@ import {
   ChevronRight,
   Search,
   RefreshCw,
+  Ellipsis,
 } from "lucide-react";
 import { Illustration } from "./components/Illustration";
 import { db } from "./db/database";
@@ -46,7 +47,7 @@ const {
 } = screens;
 const nav = [
   { to: "/", label: "Overzicht", icon: LayoutDashboard },
-  { to: "/prospects", label: "Prospects", icon: Building2 },
+  { to: "/prospects", label: "Bedrijven", icon: Building2 },
   { to: "/calling", label: "Belmodus", icon: Phone },
   { to: "/followups", label: "Opvolgingen", icon: CalendarDays },
   { to: "/data", label: "Gegevens & back-ups", icon: Database },
@@ -85,6 +86,7 @@ function Shell() {
   const p = (profile?.value as Profile) ?? defaultProfile;
   const [online, setOnline] = useState(navigator.onLine);
   const [command, setCommand] = useState(false);
+  const [more, setMore] = useState(false);
   const [query, setQuery] = useState("");
   const [swError, setSwError] = useState(false);
   const companies =
@@ -123,6 +125,7 @@ function Shell() {
   }, [p.theme, p.density]);
   useEffect(() => {
     setCommand(false);
+    setMore(false);
     window.scrollTo(0, 0);
   }, [location.pathname]);
   useEffect(() => {
@@ -185,9 +188,9 @@ function Shell() {
             <small>PROSPECT OS</small>
           </div>
         </Link>
-        <div className="workspace-label">WERKRUIMTE</div>
+        <div className="workspace-label">DAGELIJKS</div>
         <nav aria-label="Hoofdnavigatie">
-          {nav.map((n) => (
+          {nav.slice(0, 4).map((n) => (
             <NavLink key={n.to} to={n.to} end={n.to === "/"}>
               <n.icon size={19} />
               {n.label}
@@ -196,6 +199,11 @@ function Shell() {
           ))}
         </nav>
         <div className="sidebar-bottom">
+          <div className="workspace-label">BEHEER</div>
+          <NavLink to="/data" className="settings-link">
+            <Database size={18} />
+            Gegevens & back-ups
+          </NavLink>
           <NavLink to="/settings" className="settings-link">
             <SettingsIcon size={18} />
             Instellingen
@@ -300,18 +308,66 @@ function Shell() {
           </footer>
         </main>
         <nav className="mobile-nav" aria-label="Mobiele navigatie">
-          {nav.map((n) => (
+          {nav.slice(0, 4).map((n) => (
             <NavLink key={n.to} to={n.to} end={n.to === "/"}>
               <n.icon size={20} />
-              <span>{n.to === "/data" ? "Gegevens" : n.label}</span>
+              <span>
+                {n.to === "/calling"
+                  ? "Bellen"
+                  : n.to === "/followups"
+                    ? "Agenda"
+                    : n.label}
+              </span>
             </NavLink>
           ))}
-          <NavLink to="/settings">
-            <SettingsIcon size={20} />
-            <span>Instellingen</span>
-          </NavLink>
+          <button
+            className={`mobile-more ${location.pathname === "/data" || location.pathname === "/settings" ? "active" : ""}`}
+            aria-haspopup="dialog"
+            aria-expanded={more}
+            aria-current={
+              location.pathname === "/data" || location.pathname === "/settings"
+                ? "page"
+                : undefined
+            }
+            onClick={() => setMore(true)}
+          >
+            <Ellipsis size={20} />
+            <span>Meer</span>
+          </button>
         </nav>
       </div>
+      {more && (
+        <Modal
+          title="Meer"
+          description="Beheer uw gegevens en persoonlijke instellingen."
+          open
+          onClose={() => setMore(false)}
+        >
+          <div className="more-menu">
+            <Link to="/data" onClick={() => setMore(false)}>
+              <span className="more-menu-icon">
+                <Database size={22} />
+              </span>
+              <span>
+                <strong>Gegevens & back-ups</strong>
+                <small>Importeren, exporteren en herstellen</small>
+              </span>
+              <ArrowUpRight size={17} />
+            </Link>
+            <Link to="/settings" onClick={() => setMore(false)}>
+              <span className="more-menu-icon">
+                <SettingsIcon size={22} />
+              </span>
+              <span>
+                <strong>Instellingen</strong>
+                <small>Uw profiel, uiterlijk en voorkeuren</small>
+              </span>
+              <ArrowUpRight size={17} />
+            </Link>
+          </div>
+          <p className="small muted">Uw gegevens blijven op dit apparaat.</p>
+        </Modal>
+      )}
       {command && (
         <Modal
           title="Waar wilt u naartoe?"

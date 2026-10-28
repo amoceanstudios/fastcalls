@@ -1,5 +1,5 @@
 import { useMinute } from "../hooks/useMinute";
-import { useState, useMemo, useDeferredValue } from "react";
+import { useState, useMemo, useDeferredValue, useEffect } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useSearchParams, Link } from "react-router-dom";
 import { Plus, Upload } from "lucide-react";
@@ -14,16 +14,21 @@ export default function Directory() {
     p: await db.prospects.toArray(),
     n: await db.notes.toArray(),
   }));
-  const [params] = useSearchParams();
+  const [params, setParams] = useSearchParams();
+  const incomingStatus = params.get("status");
   const [saved, setSaved] = usePreference<Filters>(
     "directory-filters",
     defaultFilters,
   );
-  const [filters, setFilters] = useState({
-    ...defaultFilters,
-    ...saved,
-    ...(params.get("status") ? { status: params.get("status")! } : {}),
-  });
+  const [filters, setFilters] = useState<Filters>(() =>
+    incomingStatus
+      ? { ...defaultFilters, status: incomingStatus }
+      : { ...defaultFilters, ...saved },
+  );
+  useEffect(() => {
+    if (incomingStatus)
+      setFilters({ ...defaultFilters, status: incomingStatus });
+  }, [incomingStatus]);
   const [add, setAdd] = useState(false);
   const deferredFilters = useDeferredValue(filters);
   const shown = useMemo(
@@ -37,9 +42,7 @@ export default function Directory() {
       <header className="page-header">
         <div>
           <div className="eyebrow">BEDRIJVEN</div>
-          <h1>
-            Uw prospects<span className="accent">.</span>
-          </h1>
+          <h1>Bedrijven</h1>
           <p>Zoeken, bellen en opvolgen.</p>
         </div>
         <div className="action-row">
@@ -49,7 +52,7 @@ export default function Directory() {
           </Link>
           <button className="primary" onClick={() => setAdd(true)}>
             <Plus size={17} />
-            Prospect toevoegen
+            Bedrijf toevoegen
           </button>
         </div>
       </header>
@@ -58,6 +61,11 @@ export default function Directory() {
         onChange={(f) => {
           setFilters(f);
           setSaved(f);
+          if (params.has("status")) {
+            const next = new URLSearchParams(params);
+            next.delete("status");
+            setParams(next, { replace: true });
+          }
         }}
         prospects={data.p}
       />

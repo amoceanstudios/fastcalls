@@ -27,7 +27,7 @@ De browsertests gebruiken `/usr/bin/chromium` indien aanwezig. Op een andere mac
 ## Werkdag
 
 - **Overzicht:** eerst achterstallige opvolgingen, daarna vandaag en actiegerichte prospects op prioriteit. Afgeronde bedrijven, klanten en niet-interessante bedrijven worden uitgesloten. Een toekomstige opvolging wordt niet te vroeg naar voren gehaald.
-- **Prospects:** zoek in bedrijfsgegevens, telefoonnummers, contactpersoon, tags en kansen. Combineer filters en sorteringen; wijzig status rechtstreeks op een kaart.
+- **Bedrijven:** zoek in bedrijfsgegevens, telefoonnummers, contactpersoon, tags en kansen. Combineer filters en sorteringen; wijzig status rechtstreeks in de lijst.
 - **Bedrijfsprofiel:** contactgegevens, volledige oorspronkelijke kans, bewerkbare notities, opvolging, e-mailconcepten en historie. Nieuwe notitie-invoer blijft in IndexedDB staan wanneer u wisselt of herlaadt.
 - **Belmodus:** vaste wachtrij, vorige/volgende, overslaan, pauzeren en hervatten. Pas filters aan en kies ‘Nieuwe wachtrij met deze filters’ om de actieve sessie opnieuw samen te stellen.
 - **Belacties:** een `tel:`-klik registreert uitsluitend dat u een belactie start. Leg de daadwerkelijke uitkomst zelf vast. Er wordt geen verbinding, gesprekstijd of opname gedetecteerd. Handmatig bevestigde gespreksnotities worden aan het bedrijf gekoppeld.
@@ -104,7 +104,7 @@ Er is geen analytics, datasynchronisatie, server-API of AI-verzoek. Applicatieco
 
 ## Gecontroleerde oplevering
 
-Op 28 oktober 2026 geslaagd: 43 unit-/componenttests, 11 Chromium-browsertests, strict TypeScript, productiebuild en Prettier-controle. De browserchecks omvatten mobiele CRUD-flows, lokale conceptinvoer, zoeken/filters, belpositie, Excel-werkbladen, herstel in een nieuwe browsercontext, offline herladen, PWA-update met behoud van gegevens en geautomatiseerde axe-controles voor de hoofdschermen en een dialoog. Automatische toegankelijkheidscontroles vervangen geen handmatige screenreadercontrole.
+Op 28 oktober 2026 geslaagd: 47 unit-/componenttests, 14 Chromium-browsertests, strict TypeScript, productiebuild en Prettier-controle. De browserchecks omvatten mobiele CRUD-flows, lokale conceptinvoer, zoeken/filters, belpositie, Excel-werkbladen, herstel in een nieuwe browsercontext, offline herladen, PWA-update met behoud van gegevens en geautomatiseerde axe-controles voor de hoofdschermen en een dialoog. Automatische toegankelijkheidscontroles vervangen geen handmatige screenreadercontrole.
 
 De productie-dependencies hebben geen bekende meldingen in `npm audit --omit=dev`. De volledige dependencyboom heeft vier lage meldingen in de indirecte `deepmerge`/Workbox-buildketen. De voorgestelde automatische oplossing zou de PWA-plugin naar een incompatibele oude versie terugzetten; die downgrade is niet toegepast. Deze buildtools worden niet als onderdeel van de applicatie naar de browser gestuurd. Er wordt geen volledige productierijpheid voor ongeteste doelapparaten of externe hosting geclaimd.
 
@@ -121,3 +121,11 @@ React, IndexedDB en validatie hebben aparte vendorbestanden met inhoudshashes vo
 ### Bedrijfslogo of foto toevoegen
 
 Open een bedrijfsprofiel en kies **Bewerken → Bedrijfslogo of foto**. PNG, JPEG en WebP worden lokaal verkleind en in de browser bewaard. De afbeelding verschijnt bij het bedrijf en gaat mee in een volledige JSON-back-up. Oudere back-ups zonder afbeeldingen blijven bruikbaar. Er worden geen externe logo’s automatisch opgehaald. Details over bestandsgrootte, toegankelijkheid en beweging staan in het design system.
+
+### Nieuw dagoverzicht
+
+Het dashboard is ingedeeld naar dagelijkse acties. **Wie belt u nu?** toont één bedrijf, waarom het prioriteit krijgt en de belknop. **Wat volgt u op?** scheidt vandaag en achterstallig; taken kunnen rechtstreeks worden afgerond. Een gestarte belactie zonder bevestigde uitkomst krijgt een aparte melding. Bedrijfsstatussen en daadwerkelijk afgeronde acties staan lager; historie en recente notities zijn uitklapbaar.
+
+Zonder bedrijven toont de app één importstap in plaats van een dashboard vol lege statistieken. Desktopnavigatie scheidt dagelijkse routes en beheer. Mobiel zijn er vijf duidelijke keuzes: Overzicht, Bedrijven, Bellen, Agenda en Meer. Gegevens/back-ups en Instellingen staan onder Meer.
+
+Dashboardstatuslinks openen een schoon statusfilter, zodat een eerder bewaarde plaats- of sectorfilter niet onbedoeld bedrijven verbergt. `src/lib/dashboard.ts` berekent de aantallen uit echte records. De aanvullende indelingsregels staan in `src/styles/overview.css`. Browserchecks verifiëren ook het afronden van dashboardtaken, de mobiele Meer-navigatie en een zichtbare belactie op een 390 × 664 viewport zonder scrollen.
