@@ -1,4 +1,4 @@
-/* AMOCEAN Studio — semantic finish layer. Visual only; no workflow or data state. */
+/* AMOCEAN Abyss — black chrome, blue fluid reflections. Presentation only. */
 :root {
   --studio-surface: rgb(255 255 255 / 64%);
   --studio-surface-solid: #f9fcff;
@@ -54,27 +54,29 @@
   --glass-bg: rgb(247 252 255 / 86%);
 }
 [data-theme="dark"] {
-  --studio-surface: rgb(13 24 40 / 54%);
-  --studio-surface-solid: #0d1828;
-  --studio-elevated: #101d30;
-  --studio-field: rgb(4 12 24 / 64%);
-  --studio-stroke: rgb(157 189 220 / 21%);
-  --studio-rim: rgb(223 242 255 / 33%);
-  --studio-tint: rgb(86 221 241 / 11%);
-  --studio-action-top: #a4f6ff;
-  --studio-action-bottom: #35d5e9;
-  --studio-action-ink: #06252f;
-  --studio-icon-fill: rgb(99 225 245 / 10%);
-  --studio-shadow: 0 12px 34px #0000001a, inset 0 1px 0 #e5f6ff12;
-  --studio-chrome-shadow: 0 16px 48px #00000036, inset 0 1px 0 #e5f6ff21;
-  --bg: #060a12;
-  --panel: #0e1929;
-  --text: #f3f7fc;
-  --muted: #b0bfd1;
-  --primary: #81e9f6;
+  --studio-surface: rgb(7 16 30 / 82%);
+  --studio-surface-solid: #091321;
+  --studio-elevated: #101e32;
+  --studio-field: rgb(2 7 15 / 80%);
+  --studio-stroke: rgb(122 166 213 / 27%);
+  --studio-rim: rgb(196 225 255 / 51%);
+  --studio-tint: rgb(56 137 233 / 17%);
+  --studio-action-top: #c1e8ff;
+  --studio-action-bottom: #72b9f4;
+  --studio-action-ink: #051426;
+  --studio-icon-fill: rgb(79 151 229 / 13%);
+  --studio-shadow:
+    inset 0 1px 0 #e2f1ff21, inset 0 -1px 0 #01040baa, 0 12px 32px #00000038;
+  --studio-chrome-shadow:
+    inset 0 1px 0 #d1e9ff38, inset 0 -1px 0 #00000099, 0 16px 48px #00000070;
+  --bg: #020305;
+  --panel: #091321;
+  --text: #f2f6fc;
+  --muted: #aebed3;
+  --primary: #a4d7ff;
   --accent: var(--primary);
-  --focus: #a2f2ff;
-  --soft: #142339;
+  --focus: #c1e8ff;
+  --soft: #13263e;
   --liquid-fill: var(--studio-surface);
   --liquid-control: var(--studio-field);
   --liquid-control-edge: var(--studio-stroke);
@@ -83,15 +85,16 @@
   --liquid-action: var(--studio-tint);
   --liquid-action-ink: var(--primary);
   --liquid-reflection: linear-gradient(
-    140deg,
-    #d5edff0c,
-    #ffffff02 42%,
-    #ffffff00 70%,
-    #80e5ff07
+    155deg,
+    #d7eaff17,
+    #468ad009 24%,
+    #ffffff00 48%,
+    #205a9a10 78%,
+    #8bc3ff0d
   );
   --liquid-shadow: var(--studio-shadow);
   --shadow-panel: var(--studio-shadow);
-  --glass-bg: rgb(10 20 35 / 86%);
+  --glass-bg: rgb(5 12 23 / 93%);
 }
 body {
   -webkit-tap-highlight-color: transparent;
@@ -104,21 +107,52 @@ body {
 }
 [data-theme="dark"] .glass-scene {
   background:
-    radial-gradient(ellipse at 90% -8%, #14577545, transparent 48%),
-    radial-gradient(ellipse at 3% 58%, #1c38552b, transparent 50%),
-    linear-gradient(150deg, #090f1a, #060a12 52%, #0a1724);
+    radial-gradient(ellipse at 88% 12%, #12366270, transparent 44%),
+    radial-gradient(ellipse at 10% 88%, #0b2a5152, transparent 45%),
+    linear-gradient(145deg, #020305 15%, #04080f 58%, #020407);
 }
 .glass-scene::before {
-  width: 1400px;
-  height: 800px;
-  right: -650px;
-  top: -560px;
-  border: 1px solid #9fdef51c;
-  background: linear-gradient(150deg, #c1eaff08, transparent 60%);
-  box-shadow: none;
+  width: min(1100px, 110vw);
+  height: 64vh;
+  right: -28%;
+  top: -18%;
+  transform: rotate(-35deg);
+  border-radius: 44% 56% 68% 32% / 48% 38% 62% 52%;
+  border: 1px solid #8fbeef29;
+  background: linear-gradient(
+    158deg,
+    #afdcff24,
+    #174a7924 12%,
+    #06152a08 38%,
+    #0e254b52 65%,
+    #709dcc26 82%,
+    #01050c00
+  );
+  box-shadow:
+    inset 0 2px 2px #d1e9ff26,
+    inset -20px -26px 70px #0d3f7c29,
+    0 1px 0 #000;
 }
 .glass-scene::after {
-  content: none;
+  content: "";
+  width: min(1000px, 110vw);
+  height: 65vh;
+  left: -40%;
+  top: 48%;
+  transform: rotate(-35deg);
+  border-radius: 38% 62% 34% 66% / 58% 40% 60% 42%;
+  border: 1px solid #6f9dc622;
+  background: linear-gradient(
+    170deg,
+    #91c9ff15,
+    #16376220 16%,
+    transparent 45%,
+    #1b477c22 78%,
+    #91c9ff17
+  );
+  box-shadow:
+    inset 0 2px 0 #c9e5ff17,
+    inset 0 -18px 45px #163f6f2b;
 }
 h1 {
   font-weight: 730;
@@ -470,6 +504,131 @@ html[data-theme] .toast:not(.error) {
 }
 .more-menu a {
   border-radius: 16px;
+}
+/* Shared component shapes: a chrome rail, recessed fields and floating tiles. */
+html[data-theme] .personal-shortcuts > a {
+  position: relative;
+  overflow: hidden;
+  min-height: 132px;
+  border-radius: 24px 24px 24px 8px;
+  padding: 20px;
+  background:
+    radial-gradient(ellipse at 100% 0%, var(--studio-tint), transparent 72%),
+    var(--liquid-reflection), var(--studio-surface);
+}
+.personal-shortcuts > a::after {
+  content: "";
+  position: absolute;
+  right: 16px;
+  top: 14px;
+  width: 7px;
+  height: 7px;
+  border-top: 1px solid var(--muted);
+  border-right: 1px solid var(--muted);
+  pointer-events: none;
+}
+html[data-theme] .personal-shortcuts > a:first-child {
+  background:
+    linear-gradient(125deg, var(--studio-tint), transparent 70%),
+    var(--liquid-reflection), var(--studio-surface);
+}
+html[data-theme] :is(.focus-company, .overview-agenda, .overview-history) {
+  border-color: var(--studio-stroke);
+  border-top-color: var(--studio-rim);
+  border-radius: 24px;
+  background: var(--liquid-reflection), var(--studio-surface);
+  box-shadow: var(--studio-shadow);
+}
+html[data-theme] .work-card {
+  border-radius: 8px 24px 24px 24px;
+  border-left: 2px solid var(--studio-rim);
+}
+html[data-theme] .prospect-card {
+  border-radius: 22px 22px 22px 8px;
+}
+html[data-theme] .sidebar {
+  border-radius: 24px;
+}
+html[data-theme] .sidebar nav a.active {
+  background: linear-gradient(110deg, var(--studio-tint), transparent);
+  border-left: 2px solid var(--primary);
+}
+html[data-theme] .topbar {
+  border-radius: 999px;
+}
+html[data-theme] :is(.work-filters, .branch-buttons, .agenda-filters, .tabs) {
+  gap: 6px;
+  padding: 5px;
+  border: 1px solid var(--studio-stroke);
+  border-radius: 18px;
+  background: var(--studio-field);
+}
+html[data-theme]
+  :is(.work-filters, .branch-buttons, .agenda-filters, .tabs)
+  button {
+  border-radius: 12px;
+  box-shadow: none;
+}
+html[data-theme]
+  :is(.work-filters, .branch-buttons, .agenda-filters)
+  button[aria-pressed="true"],
+html[data-theme] .tabs button[aria-selected="true"] {
+  border-color: var(--studio-rim);
+  background: var(--liquid-reflection), var(--studio-tint);
+  box-shadow: inset 0 1px 0 #ffffff17;
+}
+html[data-theme] .primary {
+  border-radius: 999px;
+}
+html[data-theme] :is(.overview-search > .search-box, .work-search) {
+  background: var(--studio-field);
+  box-shadow: inset 0 2px 6px #00000029;
+}
+html[data-theme] .note-item {
+  border-radius: 6px 18px 18px 18px;
+  border-left: 2px solid var(--primary);
+  background: var(--liquid-reflection), var(--studio-field);
+}
+/* Reflective tint without blur on repeated cards keeps long lists inexpensive. */
+html[data-theme]
+  :is(
+    .panel,
+    .welcome-panel,
+    .next-panel,
+    .opportunity-panel,
+    .empty,
+    .filter-bar,
+    .session-stats,
+    .metric
+  ) {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+@media (max-width: 700px) {
+  .glass-scene::before {
+    width: 110vw;
+    height: 48vh;
+    right: -38%;
+    top: -10%;
+  }
+  .glass-scene::after {
+    width: 110vw;
+    height: 55vh;
+    left: -62%;
+    top: 40%;
+  }
+  html[data-theme] .personal-shortcuts > a {
+    padding: 16px;
+    min-height: 112px;
+    border-radius: 20px 20px 20px 6px;
+  }
+  html[data-theme] .topbar {
+    border-radius: 999px;
+  }
+  html[data-theme] .mobile-nav {
+    background: var(--liquid-reflection), var(--glass-bg) !important;
+    box-shadow: var(--studio-chrome-shadow);
+  }
 }
 @media (hover: hover) and (pointer: fine) {
   .personal-shortcuts > a:hover {
