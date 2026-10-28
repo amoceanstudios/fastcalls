@@ -29,10 +29,14 @@ export type PersonalWorkData = {
   activities: Activity[];
   settings: { key: string; value: unknown }[];
 };
+export type WorkCompany = Pick<
+  Prospect,
+  "id" | "companyName" | "city" | "phone" | "email" | "sector"
+> & { status: Prospect["status"] | null; missing?: boolean };
 export type WorkItem = {
   id: string;
   type: Exclude<WorkFilter, "all">;
-  company: Prospect;
+  company: WorkCompany;
   title: string;
   content: string;
   at: string | null;
@@ -47,18 +51,31 @@ export type WorkItem = {
 };
 const imported = new Set(["IMPORTED", "IMPORT_UPDATED"]);
 const companyChanges = new Set(["STATUS_CHANGED", "PROSPECT_UPDATED"]);
-const url = (p: Prospect, tab: string, hash = "") =>
-  `/prospects/${encodeURIComponent(p.id)}?tab=${tab}${hash}`;
+const url = (p: WorkCompany, tab: string, hash = "") =>
+  p.missing
+    ? "/recovery"
+    : `/prospects/${encodeURIComponent(p.id)}?tab=${tab}${hash}`;
 export function buildPersonalWork(data: PersonalWorkData) {
   const companies = new Map(data.prospects.map((p) => [p.id, p]));
+  const companyFor = (id: string): WorkCompany =>
+    companies.get(id) ?? {
+      id,
+      companyName: "Bedrijf niet gekoppeld",
+      city: "",
+      phone: "",
+      email: "",
+      sector: "",
+      status: null,
+      missing: true,
+    };
   const items: WorkItem[] = [];
   const worked = new Set<string>();
   const add = (item: WorkItem) => {
     items.push(item);
-    worked.add(item.company.id);
+    if (!item.company.missing) worked.add(item.company.id);
   };
   for (const n of data.notes) {
-    const p = companies.get(n.prospectId);
+    const p = companyFor(n.prospectId);
     if (p)
       add({
         id: `note:${n.id}`,
@@ -72,7 +89,7 @@ export function buildPersonalWork(data: PersonalWorkData) {
       });
   }
   for (const f of data.followups) {
-    const p = companies.get(f.prospectId);
+    const p = companyFor(f.prospectId);
     if (p)
       add({
         id: `followup:${f.id}`,
@@ -90,7 +107,7 @@ export function buildPersonalWork(data: PersonalWorkData) {
       });
   }
   for (const c of data.calls) {
-    const p = companies.get(c.prospectId);
+    const p = companyFor(c.prospectId);
     if (p)
       add({
         id: `call:${c.id}`,
@@ -99,15 +116,17 @@ export function buildPersonalWork(data: PersonalWorkData) {
         title: c.outcome ? outcomes[c.outcome] : "Uitkomst nog invullen",
         content: c.summary,
         at: c.confirmedAt || c.initiatedAt,
-        href: c.outcome
-          ? url(p, "calls", `#call-${encodeURIComponent(c.id)}`)
-          : `${url(p, "calls")}&call=${encodeURIComponent(c.id)}#call-summary`,
+        href: p.missing
+          ? "/recovery"
+          : c.outcome
+            ? url(p, "calls", `#call-${encodeURIComponent(c.id)}`)
+            : `${url(p, "calls")}&call=${encodeURIComponent(c.id)}#call-summary`,
         pending: !c.outcome,
         label: c.outcome ? "Belhistorie" : "Gestarte belactie",
       });
   }
   for (const d of data.drafts) {
-    const p = companies.get(d.prospectId);
+    const p = companyFor(d.prospectId);
     if (p)
       add({
         id: `draft:${d.id}`,
@@ -116,7 +135,9 @@ export function buildPersonalWork(data: PersonalWorkData) {
         title: d.subject || "Concept zonder onderwerp",
         content: [d.recipient, d.body].filter(Boolean).join("\n"),
         at: d.updatedAt,
-        href: `${url(p, "notes")}&draft=${encodeURIComponent(d.id)}`,
+        href: p.missing
+          ? "/recovery"
+          : `${url(p, "notes")}&draft=${encodeURIComponent(d.id)}`,
         label: "Concept · niet verstuurd",
       });
   }
@@ -128,7 +149,7 @@ export function buildPersonalWork(data: PersonalWorkData) {
         : null;
     if (!prefix || typeof setting.value !== "string" || !setting.value.trim())
       continue;
-    const p = companies.get(setting.key.slice(prefix.length));
+    const p = companyFor(setting.key.slice(prefix.length));
     if (p)
       add({
         id: `working:${setting.key}`,
@@ -151,9 +172,9 @@ export function buildPersonalWork(data: PersonalWorkData) {
   }
   const changes = new Map<string, Activity>();
   for (const activity of data.activities) {
-    const p = companies.get(activity.prospectId);
+    const p = companyFor(activity.prospectId);
     if (!p || imported.has(activity.type)) continue;
-    worked.add(p.id);
+    if (!p.missing) worked.add(p.id);
     if (
       companyChanges.has(activity.type) &&
       (!changes.has(p.id) || changes.get(p.id)!.createdAt < activity.createdAt)
@@ -248,7 +269,7 @@ export function filterPersonalWork(
             item.company.phone,
             item.company.email,
             item.company.sector,
-            statuses[item.company.status],
+            item.company.status ? statuses[item.company.status] : "",
             item.title,
             item.content,
             item.label,

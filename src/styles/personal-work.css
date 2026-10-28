@@ -300,3 +300,46 @@
     display: flex;
   }
 }
+.recovery-page .action-row {
+  margin: 20px 0;
+}
+.recovery-counts {
+  margin-top: 22px;
+}
+.recovery-search {
+  margin: 18px 0;
+  padding: 10px 12px;
+  border: 1px solid var(--liquid-edge);
+  border-radius: 14px;
+}
+.recovery-search input {
+  width: 100%;
+  min-width: 0;
+}
+.recovery-page .work-list {
+  margin-top: 18px;
+}
+.recovery-origin,
+.recovery-reference,
+.recovery-page .work-card-heading {
+  overflow-wrap: anywhere;
+}
+.recovery-inventory {
+  margin-top: 24px;
+}
+.recovery-inventory summary {
+  min-height: 44px;
+  cursor: pointer;
+}
+.recovery-inventory h2 {
+  font-size: 15px;
+  margin-top: 16px;
+  overflow-wrap: anywhere;
+}
+.work-reset {
+  margin: 12px 0;
+}
+.personal-work .info-box a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

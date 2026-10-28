@@ -1501,3 +1501,109 @@ test("Mijn werk opent de juiste nog onbevestigde belactie", async ({
     "Uitkomst van de oudere belactie",
   );
 });
+
+test("hersteloverzicht toont ongekoppelde en oudere gegevens en exporteert zonder wijzigingen", async ({
+  page,
+}) => {
+  await page.goto("/work");
+  await page.getByRole("heading", { name: "Mijn werk", exact: true }).waitFor();
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve, reject) => {
+        const r = indexedDB.open("amocean-prospect-os");
+        r.onsuccess = () => {
+          const d = r.result;
+          const t = d.transaction(["notes", "followups"], "readwrite");
+          const at = new Date().toISOString();
+          t.objectStore("notes").put({
+            id: "unlinked-note",
+            prospectId: "old-missing-company",
+            content: "Mijn opgeslagen notitie zonder bedrijf",
+            createdAt: at,
+            updatedAt: at,
+          });
+          t.objectStore("followups").put({
+            id: "unlinked-task",
+            prospectId: "old-missing-company",
+            title: "Bewaarde terugbelafspraak zonder bedrijf",
+            description: "Niet verwijderen",
+            dueAt: at,
+            dateOnly: false,
+            completedAt: null,
+            createdAt: at,
+          });
+          t.oncomplete = () => {
+            d.close();
+            resolve();
+          };
+          t.onerror = () => reject(t.error);
+        };
+        r.onerror = () => reject(r.error);
+      }),
+  );
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve, reject) => {
+        const r = indexedDB.open("fastcalls-legacy-fixture", 1);
+        r.onupgradeneeded = () => {
+          r.result.createObjectStore("notes", { keyPath: "id" });
+        };
+        r.onsuccess = () => {
+          const d = r.result;
+          const t = d.transaction("notes", "readwrite");
+          t.objectStore("notes").put({
+            id: "old-note",
+            companyId: "former-id",
+            content: "Eerder opgeslagen tekst uit oudere database",
+          });
+          t.oncomplete = () => {
+            d.close();
+            resolve();
+          };
+          t.onerror = () => reject(t.error);
+        };
+        r.onerror = () => reject(r.error);
+      }),
+  );
+  const before = await storedSnapshot(page);
+  await page.reload();
+  await expect(
+    page.getByText("Mijn opgeslagen notitie zonder bedrijf", { exact: true }),
+  ).toBeVisible();
+  await page.goto("/followups");
+  await expect(
+    page.getByRole("heading", {
+      name: "Bewaarde terugbelafspraak zonder bedrijf",
+      exact: true,
+    }),
+  ).toBeVisible();
+  await page.goto("/recovery");
+  await expect(
+    page.getByText("Eerder opgeslagen tekst uit oudere database", {
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Mijn opgeslagen notitie zonder bedrijf", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", {
+      name: "Bewaarde terugbelafspraak zonder bedrijf",
+      exact: true,
+    }),
+  ).toBeVisible();
+  const pending = page.waitForEvent("download");
+  await page
+    .getByRole("button", { name: "Alles veiligstellen", exact: true })
+    .click();
+  const file = await pending;
+  const { readFile } = await import("node:fs/promises");
+  const report = JSON.parse(await readFile((await file.path())!, "utf8"));
+  expect(report.format).toBe("amocean-readonly-recovery");
+  expect(
+    report.databases.find(
+      (d: { name: string }) => d.name === "fastcalls-legacy-fixture",
+    ).stores.notes[0].content,
+  ).toBe("Eerder opgeslagen tekst uit oudere database");
+  expect(await storedSnapshot(page)).toBe(before);
+});

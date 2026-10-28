@@ -71,20 +71,22 @@ export function WorkCard({
         </p>
       )}
       <Link className="work-open" to={item.href} state={state}>
-        {item.working
-          ? "Verder schrijven"
-          : item.type === "notes"
-            ? "Notitie openen"
-            : item.type === "drafts"
-              ? "Concept openen"
-              : item.type === "followups"
-                ? "Afspraak openen"
-                : item.pending
-                  ? "Uitkomst invullen"
-                  : "Bekijk bij bedrijf"}
+        {item.company.missing
+          ? "Gegevens veiligstellen"
+          : item.working
+            ? "Verder schrijven"
+            : item.type === "notes"
+              ? "Notitie openen"
+              : item.type === "drafts"
+                ? "Concept openen"
+                : item.type === "followups"
+                  ? "Afspraak openen"
+                  : item.pending
+                    ? "Uitkomst invullen"
+                    : "Bekijk bij bedrijf"}
         <ArrowUpRight size={15} />
       </Link>
-      {!compact && item.followup && (
+      {!compact && item.followup && !item.company.missing && (
         <button
           className="work-complete"
           onClick={() =>

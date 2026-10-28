@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Reveal } from "../components/Reveal";
 import { useMinute } from "../hooks/useMinute";
 import { useState } from "react";
@@ -5,7 +6,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { Plus, CalendarDays } from "lucide-react";
 import { db } from "../db/database";
 import { type FollowUp } from "../lib/models";
-import { groupFollowUp } from "../lib/logic";
+import { groupFollowUp, dateLabel } from "../lib/logic";
 import { FollowUpForm } from "../components/forms";
 import { FollowUpRow } from "../components/ProspectWorkspace";
 import { Empty } from "../components/ui";
@@ -63,15 +64,25 @@ export default function Followups() {
                 </h2>
                 {rows.map((f) => {
                   const p = data.p.find((p) => p.id === f.prospectId);
-                  return (
-                    p && (
-                      <FollowUpRow
-                        key={f.id}
-                        f={f}
-                        p={p}
-                        onEdit={() => setEdit(f)}
-                      />
-                    )
+                  return p ? (
+                    <FollowUpRow
+                      key={f.id}
+                      f={f}
+                      p={p}
+                      onEdit={() => setEdit(f)}
+                    />
+                  ) : (
+                    <article className="work-card" key={f.id}>
+                      <p className="small muted">
+                        Bedrijf niet gekoppeld · opgeslagen afspraak
+                      </p>
+                      <h3>{f.title}</h3>
+                      <p>{f.description}</p>
+                      <p className="small">{dateLabel(f.dueAt, f.dateOnly)}</p>
+                      <Link className="button" to="/recovery">
+                        Gegevens veiligstellen
+                      </Link>
+                    </article>
                   );
                 })}
               </Reveal>

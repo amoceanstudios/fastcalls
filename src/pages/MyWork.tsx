@@ -56,6 +56,32 @@ export default function MyWork() {
           Back-up maken
         </button>
       </header>
+      <div className="info-box work-storage-note">
+        <span>
+          In deze browser:{" "}
+          <strong>{data.notes.length} opgeslagen notities</strong> en{" "}
+          <strong>{data.followups.length} afspraken</strong>.{" "}
+          <Link to="/recovery">Gegevens ontbreken? Controleer de opslag.</Link>
+        </span>
+      </div>
+      {(search || filter !== "all" || !completed) && (
+        <button
+          className="work-reset"
+          onClick={() => {
+            setParams({});
+            setLimit(30);
+          }}
+        >
+          Alle opgeslagen items tonen · filters wissen
+        </button>
+      )}
+      {work.items.some((item) => item.company.missing) && (
+        <p className="info-box">
+          Er staan ook opgeslagen items zonder bedrijfskoppeling in uw opslag.
+          Die inhoud wordt hieronder weer getoond.{" "}
+          <Link to="/recovery">Veiligstellen</Link>
+        </p>
+      )}
       <div className="work-search">
         <label className="search-box">
           <Search size={19} />

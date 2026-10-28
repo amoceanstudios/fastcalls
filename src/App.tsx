@@ -41,6 +41,7 @@ import { screens, preloadRoute } from "./app/routes";
 const {
   dashboard: { Component: Dashboard },
   work: { Component: MyWork },
+  recovery: { Component: StorageRecovery },
   prospects: { Component: Directory },
   detail: { Component: Detail },
   calling: { Component: Calling },
@@ -171,7 +172,10 @@ function Shell() {
       n.to === "/"
         ? location.pathname === "/"
         : location.pathname.startsWith(n.to),
-    )?.label ?? "Instellingen";
+    )?.label ??
+    (location.pathname === "/recovery"
+      ? "Gegevens terugvinden"
+      : "Instellingen");
   return (
     <div
       className="app-shell"
@@ -286,6 +290,7 @@ function Shell() {
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/work" element={<MyWork />} />
+              <Route path="/recovery" element={<StorageRecovery />} />
               <Route path="/prospects" element={<Directory />} />
               <Route path="/prospects/:id" element={<Detail />} />
               <Route path="/calling" element={<Calling />} />
@@ -327,13 +332,14 @@ function Shell() {
             </NavLink>
           ))}
           <button
-            className={`mobile-more ${location.pathname === "/data" || location.pathname === "/settings" || location.pathname === "/calling" ? "active" : ""}`}
+            className={`mobile-more ${location.pathname === "/data" || location.pathname === "/settings" || location.pathname === "/calling" || location.pathname === "/recovery" ? "active" : ""}`}
             aria-haspopup="dialog"
             aria-expanded={more}
             aria-current={
               location.pathname === "/data" ||
               location.pathname === "/settings" ||
-              location.pathname === "/calling"
+              location.pathname === "/calling" ||
+              location.pathname === "/recovery"
                 ? "page"
                 : undefined
             }
@@ -369,6 +375,16 @@ function Shell() {
               <span>
                 <strong>Gegevens & back-ups</strong>
                 <small>Importeren, exporteren en herstellen</small>
+              </span>
+              <ArrowUpRight size={17} />
+            </Link>
+            <Link to="/recovery" onClick={() => setMore(false)}>
+              <span className="more-menu-icon">
+                <Database size={22} />
+              </span>
+              <span>
+                <strong>Gegevens terugvinden</strong>
+                <small>Browseropslag controleren en veiligstellen</small>
               </span>
               <ArrowUpRight size={17} />
             </Link>

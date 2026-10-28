@@ -1,3 +1,4 @@
+import { useLocation } from "react-router-dom";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { Building2, X } from "lucide-react";
 import {
@@ -6,16 +7,18 @@ import {
   subscribeCatalog,
 } from "../lib/catalogInstaller";
 export function BundledCatalog() {
+  const { pathname } = useLocation();
   const state = useSyncExternalStore(subscribeCatalog, getCatalogState);
   const [dismissed, setDismissed] = useState(false);
   useEffect(() => {
     const start = () => {
+      if (pathname === "/recovery") return;
       void installBundledCatalog();
     };
     start();
     window.addEventListener("online", start);
     return () => window.removeEventListener("online", start);
-  }, []);
+  }, [pathname]);
   if (
     dismissed ||
     state.phase === "idle" ||
