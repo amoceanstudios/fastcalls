@@ -869,3 +869,226 @@ test("bedrijven per branche, vindbare contactgegevens en bewaarde weergave", asy
     page.getByRole("link", { name: "0301234567", exact: true }),
   ).toHaveAttribute("href", "tel:+31301234567");
 });
+
+// Public-search responses below are isolated, explicitly fictitious fixtures.
+// They verify the workflow without claiming live access to OpenStreetMap.
+test("landelijk zoeken bewaart alle provincies, herhaalt fouten en voorkomt duplicaten", async ({
+  page,
+}) => {
+  const { createProspect } = await import("../src/lib/models");
+  const { provinceCodes, provinces } =
+    await import("../src/lib/companyDiscovery");
+  const requested: string[] = [];
+  let failDrenthe = true;
+  await page.route(
+    "**/.netlify/functions/discover-companies?*",
+    async (route) => {
+      const request = route.request();
+      const url = new URL(request.url());
+      const code = url.searchParams.get("province") as keyof typeof provinces;
+      requested.push(code);
+      expect([...url.searchParams.keys()]).toEqual(["province"]);
+      expect(request.method()).toBe("GET");
+      expect(request.postData()).toBeNull();
+      if (code === "NL-DR" && failDrenthe) {
+        await route.fulfill({
+          status: 502,
+          json: { error: "Fictieve bron tijdelijk bezet." },
+        });
+        return;
+      }
+      const id = 90001 + provinceCodes.indexOf(code);
+      const record = createProspect({
+        id: `osm-node-${id}`,
+        companyName: `Fictief Landelijk ${provinces[code]}`,
+        province: provinces[code],
+        city: "Fictieve plaats",
+        address: `Teststraat ${id}`,
+        phone: `030${id + 1000000}`,
+        email: "contact@example.org",
+        sector: "Horeca",
+        source: "openstreetmap",
+        sourceUrl: `https://www.openstreetmap.org/node/${id}`,
+        sourceFetchedAt: "2026-10-28T09:00:00.000Z",
+        sourceLicense: "© OpenStreetMap-bijdragers · ODbL 1.0",
+      });
+      await route.fulfill({
+        json: { province: code, records: [record], invalid: 0, limited: false },
+      });
+    },
+  );
+  await page.goto("/prospects");
+  await page
+    .getByRole("link", { name: "Bedrijven zoeken", exact: true })
+    .click();
+  await expect(page.getByRole("combobox", { name: "Zoekgebied" })).toHaveValue(
+    "all",
+  );
+  await page
+    .getByRole("button", { name: "Zoeken & opslaan", exact: true })
+    .click();
+  await expect(
+    page.getByText("11 bedrijven opgeslagen.", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Zoeken & opslaan", exact: true }),
+  ).toBeVisible();
+  expect(requested).toEqual(provinceCodes);
+  await expect(
+    page.getByText("Fictieve bron tijdelijk bezet.", { exact: true }),
+  ).toBeVisible();
+  failDrenthe = false;
+  await page
+    .getByRole("button", { name: "Mislukte provincies opnieuw proberen" })
+    .click();
+  await expect(
+    page.getByText("1 bedrijf opgeslagen.", { exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Zoeken & opslaan", exact: true })
+    .click();
+  await expect(
+    page.getByText("12 bestaande of dubbele vermeldingen overgeslagen.", {
+      exact: false,
+    }),
+  ).toBeVisible();
+  await page
+    .getByRole("link", { name: "Bedrijven", exact: true })
+    .first()
+    .click();
+  await expect(page.locator(".prospect-card")).toHaveCount(12);
+  await page.getByRole("button", { name: /Filters/ }).click();
+  await page
+    .getByRole("combobox", { name: "Provincie", exact: true })
+    .selectOption("Drenthe");
+  await expect(page.locator(".prospect-card")).toHaveCount(1);
+  await page
+    .getByRole("link", { name: "Fictief Landelijk Drenthe", exact: true })
+    .click();
+  await expect(
+    page.getByText("Teststraat 90001", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", {
+      name: "Bekijk oorspronkelijke bedrijfsvermelding",
+    }),
+  ).toHaveAttribute("href", "https://www.openstreetmap.org/node/90001");
+  await expect(
+    page.getByText("© OpenStreetMap-bijdragers · ODbL 1.0", { exact: true }),
+  ).toBeVisible();
+});
+
+test("stoppen van landelijk zoeken behoudt eerder opgeslagen provincies", async ({
+  page,
+}) => {
+  const { createProspect } = await import("../src/lib/models");
+  let release!: () => void;
+  const held = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const requested: string[] = [];
+  await page.route(
+    "**/.netlify/functions/discover-companies?*",
+    async (route) => {
+      const code = new URL(route.request().url()).searchParams.get("province")!;
+      requested.push(code);
+      if (code === "NL-FL") await held;
+      await route
+        .fulfill({
+          json: {
+            province: code,
+            invalid: 0,
+            limited: false,
+            records: [
+              createProspect({
+                id: "osm-node-99001",
+                companyName: "Fictief Opgeslagen Drenthe",
+                province: "Drenthe",
+                phone: "0592123456",
+                source: "openstreetmap",
+                sourceUrl: "https://www.openstreetmap.org/node/99001",
+              }),
+            ],
+          },
+        })
+        .catch(() => {});
+    },
+  );
+  await page.goto("/data");
+  await page
+    .getByRole("button", { name: "Zoeken & opslaan", exact: true })
+    .click();
+  await expect(
+    page.getByText("Flevoland ophalen…", { exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Stoppen", exact: true }).click();
+  await expect(page.getByText("Gestopt.", { exact: false })).toBeVisible();
+  release();
+  expect(requested).toEqual(["NL-DR", "NL-FL"]);
+  await page.getByRole("link", { name: "Bekijk uw bedrijven" }).click();
+  await expect(page.locator(".prospect-card")).toHaveCount(1);
+  await expect(
+    page.getByRole("link", { name: "Fictief Opgeslagen Drenthe", exact: true }),
+  ).toBeVisible();
+});
+
+test("grote bedrijvenlijsten renderen per pagina en zoeken over de hele lijst", async ({
+  page,
+}) => {
+  const rows = [
+    "Bedrijf;Plaats;Telefoon;Sector;Provincie",
+    ...Array.from(
+      { length: 61 },
+      (_, i) =>
+        `Fictief Groot ${String(i + 1).padStart(3, "0")};Utrecht;030${1000000 + i};Techniek;Utrecht`,
+    ),
+  ];
+  await page.goto("/data");
+  await page.getByLabel("Prospectbestand importeren").setInputFiles({
+    name: "fictieve-grote-lijst.csv",
+    mimeType: "text/csv",
+    buffer: Buffer.from(rows.join("\n")),
+  });
+  await page.getByRole("button", { name: "61 prospects importeren" }).click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await page.goto("/prospects");
+  await expect(page.locator(".prospect-card")).toHaveCount(60);
+  await page.getByRole("button", { name: "Volgende", exact: true }).click();
+  await expect(page.locator(".prospect-card")).toHaveCount(1);
+  await expect(
+    page.getByRole("link", { name: "Fictief Groot 061", exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole("textbox", { name: "Prospects doorzoeken" })
+    .fill("Fictief Groot 061");
+  await expect(page.locator(".prospect-card")).toHaveCount(1);
+  await expect(
+    page.getByRole("navigation", { name: "Bedrijvenpagina’s" }),
+  ).toHaveCount(0);
+});
+
+test("een ontbrekende ophaaldienst wordt duidelijk gemeld zonder bedrijven op te slaan", async ({
+  page,
+}) => {
+  await page.route("**/.netlify/functions/discover-companies?*", (route) =>
+    route.fulfill({
+      contentType: "text/html",
+      body: "<!doctype html><title>Fictieve statische hosting</title>",
+    }),
+  );
+  await page.goto("/data");
+  await page
+    .getByRole("combobox", { name: "Zoekgebied" })
+    .selectOption("NL-UT");
+  await page
+    .getByRole("button", { name: "Zoeken & opslaan", exact: true })
+    .click();
+  await expect(
+    page.getByText(
+      "Landelijk zoeken is beschikbaar op de Netlify-versie van deze app. Controleer of de nieuwste deployment klaar is.",
+      { exact: true },
+    ),
+  ).toBeVisible();
+  await page.goto("/prospects");
+  await expect(page.locator(".prospect-card")).toHaveCount(0);
+});

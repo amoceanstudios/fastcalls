@@ -1,6 +1,6 @@
 # Amocean Prospect OS
 
-Een Nederlandstalig, lokaal saleswerkstation voor Amocean. React, strict TypeScript, Vite, Dexie/IndexedDB en een installeerbare PWA. Geen backend, account, betaalde API of externe AI-dienst nodig.
+Een Nederlandstalig, lokaal saleswerkstation voor Amocean. React, strict TypeScript, Vite, Dexie/IndexedDB en een installeerbare PWA. Het CRM werkt zonder account, betaalde API of externe AI-dienst. Optioneel haalt een meegeleverde Netlify Function openbare bedrijfsvermeldingen op.
 
 ## Starten
 
@@ -100,7 +100,7 @@ Er is nog niets naar een hostingprovider gepubliceerd; de repository bevat de de
 - `src/pages`: dashboard, directory, bedrijfsprofiel, belmodus, agenda, gegevens en instellingen.
 - `src/tests`, `e2e`: unit/componenttests en productie-browsertests.
 
-Er is geen analytics, datasynchronisatie, server-API of AI-verzoek. Applicatiecode en fonts worden lokaal geserveerd. Alleen expliciete externe website-, tel- en mailto-acties verlaten de app. Een app garandeert op zichzelf geen AVG-compliance.
+Er is geen analytics, datasynchronisatie of AI-verzoek. Applicatiecode en fonts worden lokaal geserveerd. De optionele landelijke zoekfunctie stuurt alleen een vaste provinciecode naar de eigen Netlify Function; die raadpleegt OpenStreetMap/Overpass. CRM-records, notities en profielgegevens worden daarbij niet verzonden. Externe website-, tel- en mailto-acties zijn expliciet. Een app garandeert op zichzelf geen AVG-compliance.
 
 ## Gecontroleerde oplevering
 
@@ -129,3 +129,15 @@ Het dashboard is ingedeeld naar dagelijkse acties. **Wie belt u nu?** toont éé
 Zonder bedrijven toont de app één importstap in plaats van een dashboard vol lege statistieken. Desktopnavigatie scheidt dagelijkse routes en beheer. Mobiel zijn er vijf duidelijke keuzes: Overzicht, Bedrijven, Bellen, Agenda en Meer. Gegevens/back-ups en Instellingen staan onder Meer.
 
 Dashboardstatuslinks openen een schoon statusfilter, zodat een eerder bewaarde plaats- of sectorfilter niet onbedoeld bedrijven verbergt. `src/lib/dashboard.ts` berekent de aantallen uit echte records. De aanvullende indelingsregels staan in `src/styles/overview.css`. Browserchecks verifiëren ook het afronden van dashboardtaken, de mobiele Meer-navigatie en een zichtbare belactie op een 390 × 664 viewport zonder scrollen.
+
+## Bedrijven zoeken in heel Nederland
+
+Open **Bedrijven → Bedrijven zoeken** (of **Gegevens & back-ups → Vul uw bedrijvenlijst**) en kies standaard **Heel Nederland → Zoeken & opslaan**. De app haalt de twaalf provincies achter elkaar op. U kunt ook één provincie kiezen, stoppen of mislukte provincies opnieuw proberen. Elke geslaagde provincie wordt direct en atomair opgeslagen; eerdere bedrijven, notities, statussen en opvolgingen blijven behouden. Dit is een optionele online functie: het CRM en bestandimport blijven offline werken.
+
+De bron is **OpenStreetMap via Overpass** (`https://overpass-api.de/api/interpreter`). Er zijn geen API-sleutels nodig. Het is geen compleet bedrijvenregister: alleen genoemde bedrijfsvermeldingen met een bruikbaar telefoonnummer in de geselecteerde categorieën komen mee. Publieke e-mailadressen en websites worden overgenomen wanneer vermeld. Ontbrekende gegevens worden niet geraden. Bron-URL, provincie, adres (indien beschikbaar), ophaaldatum en `© OpenStreetMap-bijdragers · ODbL 1.0` blijven bewaard in bedrijfsprofiel, volledige back-up en CSV/Excel-export. De ophaaldatum is geen verificatiedatum. Zie [OSM-licentie](https://www.openstreetmap.org/copyright) voor hergebruik.
+
+De ophaaldienst staat in `netlify/functions/discover-companies.ts`. Netlify bouwt die mee vanuit `netlify.toml`. Een gewone Vite-preview of statische hosting bevat deze serverfunctie niet; de interface meldt dat expliciet. De functie accepteert alleen twaalf vaste provinciecodes en een GET-verzoek. Geen vrije zoekquery of URL kan als serververzoek worden uitgevoerd. De Overpass-query heeft 22 seconden rekentijd; de externe aanvraag wordt na 26 seconden afgebroken. Publieke resultaten mogen één uur via de CDN worden hergebruikt. Een timeout, fout of gedeeltelijk Overpass-resultaat wordt als mislukt gemeld, nooit als een lege of volledige provincie. Maximaal 8.000 bruikbare vermeldingen en 4 MB aan publieke contactgegevens per provincie per aanvraag; de interface meldt het wanneer een grens bereikt wordt. CRM-standaardwaarden worden pas lokaal toegevoegd om de netwerkrespons klein te houden. Beschikbaarheid en volledigheid van de externe bron zijn niet gegarandeerd.
+
+Opnieuw zoeken slaat bronidentiteiten en overeenkomende contactvermeldingen over. Een gedeelde bedrijfswebsite alleen voegt ketenvestigingen niet samen. Opslag gebruikt bulktransacties en de lijst rendert maximaal 60 kaarten per pagina. Zoeken en branche-/provinciefilters gelden over de volledige opgeslagen lijst.
+
+De bron was tijdens ontwikkeling in deze cloudomgeving door de netwerkproxy geblokkeerd (HTTP 403). De query, serverfouten, conversie, opslag en interface zijn met expliciet fictieve testfixtures gecontroleerd. Er zijn daardoor geen echte bedrijven vooraf geladen en live bronresultaten zijn hier niet bevestigd. Start de landelijke zoekronde na de Netlify-deployment.

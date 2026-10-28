@@ -1,8 +1,8 @@
 import { useMinute } from "../hooks/useMinute";
-import { useState, useMemo, useDeferredValue, useEffect } from "react";
+import { useState, useMemo, useDeferredValue, useEffect, useRef } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useSearchParams, Link } from "react-router-dom";
-import { Plus, Upload } from "lucide-react";
+import { Plus, Upload, Search } from "lucide-react";
 import { db } from "../db/database";
 import { FilterBar } from "../components/FilterBar";
 import { filterProspects, defaultFilters, type Filters } from "../lib/logic";
@@ -29,6 +29,9 @@ export default function Directory() {
     if (incomingStatus)
       setFilters({ ...defaultFilters, status: incomingStatus });
   }, [incomingStatus]);
+  const resultsRef = useRef<HTMLDivElement>(null);
+  const [page, setPage] = useState(0);
+  const pageSize = 60;
   const [add, setAdd] = useState(false);
   const [grouped, setGrouped] = usePreference<boolean>(
     "directory-grouped",
@@ -39,6 +42,14 @@ export default function Directory() {
     () => (data ? filterProspects(data.p, deferredFilters, data.n) : []),
     [data, deferredFilters, minute],
   );
+  const safePage = Math.min(
+    page,
+    Math.max(0, Math.ceil(shown.length / pageSize) - 1),
+  );
+  const pageItems = useMemo(
+    () => shown.slice(safePage * pageSize, (safePage + 1) * pageSize),
+    [shown, safePage],
+  );
   const branches = useMemo(() => {
     const counts = new Map<string, number>();
     for (const p of data?.p ?? []) {
@@ -48,15 +59,16 @@ export default function Directory() {
   }, [data]);
   const groups = useMemo(() => {
     const result = new Map<string, typeof shown>();
-    for (const p of shown) {
+    for (const p of pageItems) {
       const sector = p.sector || "Nog geen branche";
       const items = result.get(sector) ?? [];
       items.push(p);
       result.set(sector, items);
     }
     return [...result].sort(([a], [b]) => a.localeCompare(b, "nl"));
-  }, [shown]);
+  }, [pageItems]);
   const updateFilters = (f: Filters) => {
+    setPage(0);
     setFilters(f);
     setSaved(f);
     if (params.has("status")) {
@@ -64,6 +76,11 @@ export default function Directory() {
       next.delete("status");
       setParams(next, { replace: true });
     }
+  };
+  const changePage = (next: number) => {
+    setPage(next);
+    resultsRef.current?.focus({ preventScroll: true });
+    resultsRef.current?.scrollIntoView({ block: "start" });
   };
   if (!data) return <p role="status">Prospects laden…</p>;
 
@@ -76,6 +93,10 @@ export default function Directory() {
           <p>Zoeken, bellen en opvolgen.</p>
         </div>
         <div className="action-row">
+          <Link to="/data#discover" className="button">
+            <Search size={16} />
+            Bedrijven zoeken
+          </Link>
           <Link to="/data" className="button">
             <Upload size={16} />
             Importeren
@@ -113,7 +134,7 @@ export default function Directory() {
         onChange={updateFilters}
         prospects={data.p}
       />
-      <div className="results-label">
+      <div className="results-label" ref={resultsRef} tabIndex={-1}>
         <span>
           {shown.length} van {data.p.length} bedrijven
         </span>
@@ -144,7 +165,7 @@ export default function Directory() {
           </div>
         ) : (
           <div className="prospect-grid">
-            {shown.map((p) => (
+            {pageItems.map((p) => (
               <ProspectCard key={p.id} p={p} />
             ))}
           </div>
@@ -160,7 +181,7 @@ export default function Directory() {
           description={
             data.p.length
               ? "Pas uw zoekopdracht of filters aan."
-              : "Importeer uw Excel-bestand of voeg handmatig een bedrijf toe."
+              : "Zoek bedrijven in heel Nederland, importeer uw lijst of voeg handmatig een bedrijf toe."
           }
         >
           <button className="primary" onClick={() => setAdd(true)}>
@@ -168,6 +189,28 @@ export default function Directory() {
             Bedrijf toevoegen
           </button>
         </Empty>
+      )}
+      {shown.length > pageSize && (
+        <nav className="directory-pagination" aria-label="Bedrijvenpagina’s">
+          <button
+            disabled={safePage === 0}
+            onClick={() => changePage(safePage - 1)}
+          >
+            Vorige
+          </button>
+          <span role="status">
+            Pagina {safePage + 1} van {Math.ceil(shown.length / pageSize)} ·{" "}
+            {safePage * pageSize + 1}–
+            {Math.min((safePage + 1) * pageSize, shown.length)} van{" "}
+            {shown.length}
+          </span>
+          <button
+            disabled={(safePage + 1) * pageSize >= shown.length}
+            onClick={() => changePage(safePage + 1)}
+          >
+            Volgende
+          </button>
+        </nav>
       )}
       <p className="small muted">
         Wijzigingen worden op dit apparaat bewaard. Exporteer een back-up via{" "}

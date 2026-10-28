@@ -65,6 +65,7 @@ export type Filters = {
   status: string;
   sector: string;
   city: string;
+  province: string;
   priority: string;
   followup: string;
   called: string;
@@ -77,6 +78,7 @@ export const defaultFilters: Filters = {
   status: "",
   sector: "",
   city: "",
+  province: "",
   priority: "",
   followup: "",
   called: "",
@@ -101,6 +103,8 @@ export function filterProspects(
             [
               p.companyName,
               p.city,
+              p.province,
+              p.address,
               p.sector,
               p.phone,
               p.phoneNormalized,
@@ -124,6 +128,7 @@ export function filterProspects(
         (!filters.status || p.status === filters.status) &&
         (!filters.sector || p.sector === filters.sector) &&
         (!filters.city || p.city === filters.city) &&
+        (!filters.province || p.province === filters.province) &&
         (!filters.priority || p.priority === filters.priority) &&
         (!filters.followup ||
           (filters.followup === "none"

@@ -9,7 +9,7 @@ export function FilterBar({
 }: {
   filters: Filters;
   onChange: (f: Filters) => void;
-  prospects: { city: string; sector: string }[];
+  prospects: { city: string; sector: string; province?: string }[];
 }) {
   const [expanded, setExpanded] = useState(false);
   const count = Object.entries(filters).filter(
@@ -97,6 +97,16 @@ export function FilterBar({
                 .filter(Boolean)
                 .sort()
                 .map((s) => [s, s]),
+            ),
+          )}
+          {select(
+            "province",
+            "Provincie",
+            Object.fromEntries(
+              [...new Set(prospects.map((p) => p.province || ""))]
+                .filter(Boolean)
+                .sort()
+                .map((province) => [province, province]),
             ),
           )}
           {select("priority", "Prioriteit", priorities)}

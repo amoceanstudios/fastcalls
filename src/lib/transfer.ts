@@ -25,6 +25,11 @@ export const fields = {
   originalNumber: "Nr",
   companyName: "Bedrijf",
   city: "Plaats",
+  province: "Provincie",
+  address: "Adres",
+  sourceUrl: "Bron-URL",
+  sourceFetchedAt: "Bron opgehaald op",
+  sourceLicense: "Bronlicentie",
   phone: "Telefoon",
   website: "Website",
   sector: "Sector / Type",
@@ -40,6 +45,11 @@ const aliases: Record<Field, string[]> = {
   originalNumber: ["nr", "nummer", "number", "originalnumber"],
   companyName: ["bedrijf", "bedrijfsnaam", "company", "companyname", "naam"],
   city: ["plaats", "stad", "city", "vestigingsplaats"],
+  province: ["provincie", "province"],
+  address: ["adres", "address"],
+  sourceUrl: ["bron url", "sourceurl"],
+  sourceFetchedAt: ["bron opgehaald op", "sourcefetchedat"],
+  sourceLicense: ["bronlicentie", "sourcelicense"],
   phone: ["telefoon", "telefoonnummer", "phone", "tel"],
   website: ["website", "url", "site"],
   sector: ["sector type", "sector", "type", "branche", "industry"],
@@ -147,7 +157,9 @@ export function previewImport(
       const issue = raw.issues?.find((issue) => issue.row === i + 2);
       if (issue) throw new Error(issue.message);
       if (!read("companyName")) throw new Error("Bedrijfsnaam ontbreekt.");
-      const phone = read("phone"),
+      // CSV export prefixes formula-like values for spreadsheet safety. Restore
+      // that prefix only for a numeric international phone number, never a formula.
+      const phone = read("phone").replace(/^'(?=\+\d[\d\s().-]*$)/, ""),
         website = read("website");
       if (phone && !normalizePhone(phone))
         warnings.push({
@@ -168,6 +180,15 @@ export function previewImport(
             ? Number(read("originalNumber"))
             : null,
         city: read("city"),
+        province: read("province") || undefined,
+        address: read("address") || undefined,
+        sourceUrl: safeUrl(read("sourceUrl")) || undefined,
+        sourceFetchedAt: z.iso
+          .datetime({ offset: true })
+          .safeParse(read("sourceFetchedAt")).success
+          ? read("sourceFetchedAt")
+          : undefined,
+        sourceLicense: read("sourceLicense") || undefined,
         phone,
         website,
         sector: read("sector"),
@@ -186,7 +207,12 @@ export function previewImport(
           ),
         )?.[0] ??
           (read("priority") || "MEDIUM")) as Prospect["priority"],
-        source: "file-import",
+        source:
+          /^https:\/\/www\.openstreetmap\.org\/(node|way|relation)\/\d+$/.test(
+            safeUrl(read("sourceUrl")),
+          )
+            ? "openstreetmap"
+            : "file-import",
       });
       if ([...existing, ...valid].some((e) => duplicate(e, p))) {
         duplicates.push(i + 2);

@@ -270,7 +270,7 @@ export const ProspectCard = memo(function ProspectCard({ p }: { p: Prospect }) {
         <ArrowUpRight size={18} />
       </Link>
       <p className="company-meta muted small">
-        {[p.city, p.sector].filter(Boolean).join(" · ") ||
+        {[p.city || p.province, p.sector].filter(Boolean).join(" · ") ||
           "Geen sector of plaats"}
       </p>
       <p className="card-opportunity">
@@ -308,6 +308,18 @@ export const ProspectCard = memo(function ProspectCard({ p }: { p: Prospect }) {
           ● {priorities[p.priority]}
         </span>
       </div>
+      {p.source === "openstreetmap" && p.sourceUrl && safeUrl(p.sourceUrl) && (
+        <p className="small muted company-source">
+          <a
+            href={safeUrl(p.sourceUrl)}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            OpenStreetMap-bron
+          </a>{" "}
+          · niet gecontroleerd
+        </p>
+      )}
       {p.followUpAt && (
         <p className="card-followup small muted">
           Opvolging: {new Date(p.followUpAt).toLocaleDateString("nl-NL")}

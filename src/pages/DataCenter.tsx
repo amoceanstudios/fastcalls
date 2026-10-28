@@ -1,3 +1,4 @@
+import { CompanyDiscovery } from "../components/CompanyDiscovery";
 import { Reveal } from "../components/Reveal";
 import { useState, useContext, useRef } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
@@ -94,9 +95,10 @@ export default function DataCenter() {
         </div>
         <span className="privacy-pill">
           <ShieldCheck size={16} />
-          100% lokale verwerking
+          Gegevens lokaal bewaard
         </span>
       </header>
+      <CompanyDiscovery />
       <div className="data-columns">
         <Reveal className="panel import-panel">
           <div className="section-icon">
@@ -137,7 +139,7 @@ export default function DataCenter() {
           </label>
           <p className="small muted">
             Eerste werkblad, met kolomnamen op rij 1. Oud XLS? Sla het op als
-            XLSX. Er zijn nog geen echte prospectgegevens aangeleverd.
+            XLSX.
           </p>
           <div className="info-box">
             <ShieldCheck size={19} />

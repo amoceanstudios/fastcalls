@@ -38,7 +38,9 @@ export function ProspectForm({
       | "website"
       | "email"
       | "contactPerson"
-      | "sector",
+      | "sector"
+      | "province"
+      | "address",
     label: string,
     type = "text",
   ) => (
@@ -48,7 +50,7 @@ export function ProspectForm({
         required={key === "companyName"}
         type={type}
         list={key === "sector" ? "company-sectors" : undefined}
-        value={p[key]}
+        value={p[key] ?? ""}
         onChange={(e) => setP({ ...p, [key]: e.target.value })}
       />
     </label>
@@ -148,6 +150,8 @@ export function ProspectForm({
         <div className="form-grid">
           {field("companyName", "Bedrijfsnaam")}
           {field("city", "Plaats")}
+          {field("province", "Provincie")}
+          {field("address", "Adres")}
           {field("sector", "Sector / type")}
           {field("phone", "Telefoon", "tel")}
           {field("website", "Website")}

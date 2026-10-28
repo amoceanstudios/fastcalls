@@ -40,6 +40,15 @@ export const ProspectSchema = z.object({
   originalNumber: z.number().finite().nullable(),
   companyName: z.string().trim().min(1).max(500),
   city: text,
+  province: text.optional(),
+  address: text.optional(),
+  sourceUrl: z
+    .string()
+    .url()
+    .refine((value) => /^https?:\/\//.test(value))
+    .optional(),
+  sourceFetchedAt: stamp.optional(),
+  sourceLicense: text.optional(),
   phone: text,
   phoneNormalized: text,
   website: text,
@@ -154,6 +163,9 @@ export function normalizePhone(input: string): string {
     .replace(/^(\+31|0031)\s*\(0\)/, "$1")
     .replace(/[\s().-]/g, "");
   const value = clean.replace(/^0031/, "+31").replace(/^\+31\(0\)/, "+31");
+  if (/^0(?:800|900|906|909)\d{4}(?:\d{3})?$/.test(value))
+    return "+31" + value.slice(1);
+  if (/^\+31(?:800|900|906|909)\d{4}(?:\d{3})?$/.test(value)) return value;
   if (/^0[1-9]\d{8}$/.test(value)) return "+31" + value.slice(1);
   if (/^\+31[1-9]\d{8}$/.test(value)) return value;
   if (/^\+(?!31)\d{8,15}$/.test(value)) return value;

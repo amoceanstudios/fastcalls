@@ -785,9 +785,43 @@ export default function ProspectWorkspace({
               </dd>
               <dt>E-mail</dt>
               <dd>{p.email || "Niet ingevuld"}</dd>
+              {p.address && (
+                <>
+                  <dt>Adres</dt>
+                  <dd>{p.address}</dd>
+                </>
+              )}
+              {p.province && (
+                <>
+                  <dt>Provincie</dt>
+                  <dd>{p.province}</dd>
+                </>
+              )}
               <dt>Contactpersoon</dt>
               <dd>{p.contactPerson || "Niet ingevuld"}</dd>
             </dl>
+            {p.source === "openstreetmap" &&
+              p.sourceUrl &&
+              safeUrl(p.sourceUrl) && (
+                <div className="company-source small muted">
+                  <a
+                    href={safeUrl(p.sourceUrl)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Bekijk oorspronkelijke bedrijfsvermelding
+                  </a>
+                  <p>
+                    {p.sourceLicense || "© OpenStreetMap-bijdragers · ODbL 1.0"}
+                  </p>
+                  {p.sourceFetchedAt && (
+                    <p>
+                      Opgehaald op {dateLabel(p.sourceFetchedAt)}.
+                      Contactgegevens niet handmatig gecontroleerd.
+                    </p>
+                  )}
+                </div>
+              )}
           </section>
         </aside>
       </div>

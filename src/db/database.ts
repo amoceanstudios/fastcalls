@@ -293,6 +293,11 @@ export async function importProspects(
           for (const key of [
             "companyName",
             "city",
+            "province",
+            "address",
+            "sourceUrl",
+            "sourceFetchedAt",
+            "sourceLicense",
             "phone",
             "phoneNormalized",
             "website",
