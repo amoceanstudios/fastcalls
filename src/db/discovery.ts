@@ -25,8 +25,7 @@ export async function saveDiscoveredCompanies(incoming: Prospect[]) {
           prospectId: p.id,
           type: "IMPORTED",
           createdAt: now(),
-          description:
-            "Openbare bedrijfsvermelding uit OpenStreetMap opgeslagen; contactgegevens niet handmatig gecontroleerd",
+          description: `Openbare bedrijfsvermelding uit ${p.source === "alltheplaces" ? "All the Places" : "OpenStreetMap"} opgeslagen; contactgegevens niet handmatig gecontroleerd`,
         })),
       );
     }

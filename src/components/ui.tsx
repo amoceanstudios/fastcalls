@@ -273,6 +273,7 @@ export const ProspectCard = memo(function ProspectCard({ p }: { p: Prospect }) {
         {[p.city || p.province, p.sector].filter(Boolean).join(" · ") ||
           "Geen sector of plaats"}
       </p>
+      {p.address && <p className="small muted company-meta">{p.address}</p>}
       <p className="card-opportunity">
         {p.valueProposition || "Voeg een kans voor Amocean toe."}
       </p>
@@ -308,18 +309,22 @@ export const ProspectCard = memo(function ProspectCard({ p }: { p: Prospect }) {
           ● {priorities[p.priority]}
         </span>
       </div>
-      {p.source === "openstreetmap" && p.sourceUrl && safeUrl(p.sourceUrl) && (
-        <p className="small muted company-source">
-          <a
-            href={safeUrl(p.sourceUrl)}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            OpenStreetMap-bron
-          </a>{" "}
-          · niet gecontroleerd
-        </p>
-      )}
+      {(p.source === "openstreetmap" || p.source === "alltheplaces") &&
+        p.sourceUrl &&
+        safeUrl(p.sourceUrl) && (
+          <p className="small muted company-source">
+            <a
+              href={safeUrl(p.sourceUrl)}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {p.source === "openstreetmap"
+                ? "OpenStreetMap-bron"
+                : "All the Places-bron"}
+            </a>{" "}
+            · niet gecontroleerd
+          </p>
+        )}
       {p.followUpAt && (
         <p className="card-followup small muted">
           Opvolging: {new Date(p.followUpAt).toLocaleDateString("nl-NL")}
@@ -402,6 +407,8 @@ export async function clearData() {
     ],
     async () => {
       for (const table of db.tables) await table.clear();
+      // Explicit deletion must stay deleted after reloading the application.
+      await db.settings.put({ key: "bundled-catalog-disabled", value: true });
     },
   );
 }

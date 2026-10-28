@@ -30,6 +30,7 @@ export const fields = {
   sourceUrl: "Bron-URL",
   sourceFetchedAt: "Bron opgehaald op",
   sourceLicense: "Bronlicentie",
+  sourceDatasetDate: "Datum bronbestand",
   phone: "Telefoon",
   website: "Website",
   sector: "Sector / Type",
@@ -50,6 +51,7 @@ const aliases: Record<Field, string[]> = {
   sourceUrl: ["bron url", "sourceurl"],
   sourceFetchedAt: ["bron opgehaald op", "sourcefetchedat"],
   sourceLicense: ["bronlicentie", "sourcelicense"],
+  sourceDatasetDate: ["datum bronbestand", "sourcedatasetdate"],
   phone: ["telefoon", "telefoonnummer", "phone", "tel"],
   website: ["website", "url", "site"],
   sector: ["sector type", "sector", "type", "branche", "industry"],
@@ -189,6 +191,10 @@ export function previewImport(
           ? read("sourceFetchedAt")
           : undefined,
         sourceLicense: read("sourceLicense") || undefined,
+        sourceDatasetDate: z.iso.date().safeParse(read("sourceDatasetDate"))
+          .success
+          ? read("sourceDatasetDate")
+          : undefined,
         phone,
         website,
         sector: read("sector"),
@@ -212,7 +218,11 @@ export function previewImport(
             safeUrl(read("sourceUrl")),
           )
             ? "openstreetmap"
-            : "file-import",
+            : /^https:\/\/data\.alltheplaces\.xyz\//.test(
+                  safeUrl(read("sourceUrl")),
+                )
+              ? "alltheplaces"
+              : "file-import",
       });
       if ([...existing, ...valid].some((e) => duplicate(e, p))) {
         duplicates.push(i + 2);
@@ -293,6 +303,7 @@ export async function restoreBackup(
   return db.transaction("rw", tables, async () => {
     if (mode === "replace") {
       for (const table of tables) await table.clear();
+      await db.settings.put({ key: "bundled-catalog-disabled", value: true });
     }
     const existing = await db.prospects.toArray();
     const idMap = new Map<string, string>();

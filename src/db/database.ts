@@ -298,6 +298,7 @@ export async function importProspects(
             "sourceUrl",
             "sourceFetchedAt",
             "sourceLicense",
+            "sourceDatasetDate",
             "phone",
             "phoneNormalized",
             "website",

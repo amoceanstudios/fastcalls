@@ -1,3 +1,4 @@
+import { BundledCatalog } from "./components/BundledCatalog";
 import {
   Suspense,
   useEffect,
@@ -243,6 +244,7 @@ function Shell() {
             </button>
           </div>
         </header>
+        <BundledCatalog />
         {!online && (
           <div className="status-banner">
             <WifiOff size={16} />U werkt offline. Wijzigingen worden op dit

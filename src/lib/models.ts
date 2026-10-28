@@ -49,6 +49,7 @@ export const ProspectSchema = z.object({
     .optional(),
   sourceFetchedAt: stamp.optional(),
   sourceLicense: text.optional(),
+  sourceDatasetDate: z.iso.date().optional(),
   phone: text,
   phoneNormalized: text,
   website: text,

@@ -97,7 +97,14 @@ export function classifyBusiness(t: Record<string, string>): string {
   if (t.office === "estate_agent") return "Vastgoed";
   if (
     t.amenity === "bank" ||
-    has("office", ["insurance", "financial", "financial_advisor", "accountant"])
+    has("office", [
+      "insurance",
+      "financial",
+      "financial_advisor",
+      "financial_adviser",
+      "mortgage",
+      "accountant",
+    ])
   )
     return "Financiële dienstverlening";
   if (t.leisure) return "Sport & fitness";
@@ -115,7 +122,7 @@ export function classifyBusiness(t: Record<string, string>): string {
       "gardener",
       "glaziery",
     ]) ||
-    has("shop", ["trade", "building_materials", "hardware"])
+    has("shop", ["trade", "building_materials", "hardware", "doityourself"])
   )
     return "Bouw & installatie";
   if (t.shop) return "Winkels & retail";
@@ -217,6 +224,7 @@ export const PublicCompanySchema = ProspectSchema.pick({
   sourceUrl: true,
   sourceFetchedAt: true,
   sourceLicense: true,
+  sourceDatasetDate: true,
 });
 export const DiscoveryResponseSchema = z.object({
   province: z.string().refine(isProvince),

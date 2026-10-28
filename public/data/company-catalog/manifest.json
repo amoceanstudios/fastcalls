@@ -1,0 +1,68 @@
+{
+  "version": "nl-20261028-3fdb921a2013",
+  "generatedAt": "2026-10-28T12:33:54.218Z",
+  "count": 11550,
+  "withEmail": 3701,
+  "shards": [
+    {
+      "file": "companies-001.json",
+      "count": 1000,
+      "sha256": "2ffe6db71ea2d42a599936437b7c0f92aecd26c4332770bc9040b3649fa7f0e6"
+    },
+    {
+      "file": "companies-002.json",
+      "count": 1000,
+      "sha256": "514a33b2aa8ce7a3925250504c823c85a0a43c1c5a9eae303d57b5e5ef88cf8d"
+    },
+    {
+      "file": "companies-003.json",
+      "count": 1000,
+      "sha256": "517191d360629be54344ec2459f75bd9ec8c65f25579dc314e3665bf89f530a6"
+    },
+    {
+      "file": "companies-004.json",
+      "count": 1000,
+      "sha256": "8e48e8ec1c0f55cabf7928b74da7b88ae4364b2700ac46745bf721718d12ee11"
+    },
+    {
+      "file": "companies-005.json",
+      "count": 1000,
+      "sha256": "e915581bb24e5df42721127e126ab50d6b36932f75eaf9bc32b8751dbf28a2e0"
+    },
+    {
+      "file": "companies-006.json",
+      "count": 1000,
+      "sha256": "3ad79ba54ab7b7b544122ec086d94ff30f8bf47ff12f2e6721171b2f58363d52"
+    },
+    {
+      "file": "companies-007.json",
+      "count": 1000,
+      "sha256": "f192e005dea18ad76d169a5b3ad153a0bb679e4677d13aa9af87129fe83b05ac"
+    },
+    {
+      "file": "companies-008.json",
+      "count": 1000,
+      "sha256": "2c0c74a2fdab06d8aa1eda6a399e6c0fff01009207f224b6c0567b107f2b122c"
+    },
+    {
+      "file": "companies-009.json",
+      "count": 1000,
+      "sha256": "c1aea418d22e7e45ba309b5d51ce3ac15651c12e78fb810e9d52c95d6a204e16"
+    },
+    {
+      "file": "companies-010.json",
+      "count": 1000,
+      "sha256": "4c29ea20e76324286db49642945d15fccceffd2c9d0062d9fead21eeaabafebd"
+    },
+    {
+      "file": "companies-011.json",
+      "count": 1000,
+      "sha256": "e27b581d8346b69f7ab2f1a204db0da4e4b2d86161606584a9d3aa1361e800d3"
+    },
+    {
+      "file": "companies-012.json",
+      "count": 550,
+      "sha256": "27f4f141fa6a25347f3b03cf61ac282d9b8a172a52512ca67fa8b885ea4481f4"
+    }
+  ]
+}

@@ -217,6 +217,16 @@ export default function Directory() {
         <Link to="/data">Gegevens &amp; back-ups</Link> om alles veilig mee te
         nemen.
       </p>
+      <p className="small muted">
+        Bedrijfsdata: © OpenStreetMap-bijdragers (ODbL) en All the Places (CC0).{" "}
+        <a
+          href="/data/company-catalog/LICENSES.md"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Bronnen &amp; licenties
+        </a>
+      </p>
       {add && <ProspectForm onClose={() => setAdd(false)} />}
     </>
   );

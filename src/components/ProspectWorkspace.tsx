@@ -800,7 +800,7 @@ export default function ProspectWorkspace({
               <dt>Contactpersoon</dt>
               <dd>{p.contactPerson || "Niet ingevuld"}</dd>
             </dl>
-            {p.source === "openstreetmap" &&
+            {(p.source === "openstreetmap" || p.source === "alltheplaces") &&
               p.sourceUrl &&
               safeUrl(p.sourceUrl) && (
                 <div className="company-source small muted">
@@ -814,6 +814,9 @@ export default function ProspectWorkspace({
                   <p>
                     {p.sourceLicense || "© OpenStreetMap-bijdragers · ODbL 1.0"}
                   </p>
+                  {p.sourceDatasetDate && (
+                    <p>Bronbestand verzameld op {p.sourceDatasetDate}.</p>
+                  )}
                   {p.sourceFetchedAt && (
                     <p>
                       Opgehaald op {dateLabel(p.sourceFetchedAt)}.

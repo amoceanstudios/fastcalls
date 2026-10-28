@@ -1,0 +1,981 @@
+{
+  "generatedAt": "2026-10-28T12:33:54.218Z",
+  "version": "nl-20261028-3fdb921a2013",
+  "count": 11550,
+  "withPhone": 11550,
+  "withEmail": 3701,
+  "withWebsite": 9849,
+  "duplicatesRemoved": 184,
+  "invalidOrMissingPhone": 8002,
+  "outsideNetherlandsExcluded": 673,
+  "bySector": {
+    "Ambacht & productie": 6,
+    "Automotive": 858,
+    "Beauty & wellness": 279,
+    "Bouw & installatie": 431,
+    "Financiële dienstverlening": 193,
+    "Horeca": 887,
+    "Sport & fitness": 30,
+    "Toerisme & verblijf": 80,
+    "Vastgoed": 2,
+    "Winkels & retail": 8579,
+    "Zakelijke dienstverlening": 135,
+    "Zorg": 70
+  },
+  "byProvince": {
+    "Drenthe": 499,
+    "Flevoland": 242,
+    "Friesland": 530,
+    "Gelderland": 1494,
+    "Groningen": 452,
+    "Limburg": 722,
+    "Niet bepaald": 128,
+    "Noord-Brabant": 1687,
+    "Noord-Holland": 1711,
+    "Overijssel": 876,
+    "Utrecht": 995,
+    "Zeeland": 317,
+    "Zuid-Holland": 1897
+  },
+  "bySource": {
+    "openstreetmap": 1760,
+    "alltheplaces": 9790
+  },
+  "scope": "Dutch public business listings from the successfully downloaded national All the Places datasets and selected OSM city areas. Not a complete Dutch business register; phone/email reachability not manually verified.",
+  "provinceClassification": "CBS/PDOK 2025 province boundaries; unmatched coordinates remain unassigned.",
+  "provinceBoundarySource": "https://service.pdok.nl/cbs/gebiedsindelingen/2025/wfs/v1_0",
+  "failedSources": [
+    {
+      "dataset": "de_hypotheker_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/de_hypotheker_nl.geojson",
+      "error": "The read operation timed out"
+    },
+    {
+      "dataset": "vomar_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/vomar_nl.geojson",
+      "error": "The read operation timed out"
+    },
+    {
+      "dataset": "de_hypotheker_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/de_hypotheker_nl.geojson",
+      "error": "The read operation timed out"
+    },
+    {
+      "dataset": "vomar_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/vomar_nl.geojson",
+      "error": "The read operation timed out"
+    }
+  ],
+  "sources": [
+    {
+      "type": "openstreetmap",
+      "area": "Utrecht",
+      "url": "https://api.openstreetmap.org/api/0.6/map?bbox=5.118,52.088,5.124,52.094",
+      "fetchedAt": "2026-10-28T12:19:00Z",
+      "sourceRecords": 275,
+      "usable": 275
+    },
+    {
+      "type": "openstreetmap",
+      "area": "Assen",
+      "url": "https://api.openstreetmap.org/api/0.6/map?bbox=6.5600,52.9920,6.5660,52.9980",
+      "fetchedAt": "2026-10-28T12:19:03Z",
+      "sourceRecords": 155,
+      "usable": 155
+    },
+    {
+      "type": "openstreetmap",
+      "area": "Lelystad",
+      "url": "https://api.openstreetmap.org/api/0.6/map?bbox=5.4710,52.5070,5.4770,52.5130",
+      "fetchedAt": "2026-10-28T12:19:03Z",
+      "sourceRecords": 20,
+      "usable": 20
+    },
+    {
+      "type": "openstreetmap",
+      "area": "Arnhem",
+      "url": "https://api.openstreetmap.org/api/0.6/map?bbox=5.9080,51.9790,5.9140,51.9850",
+      "fetchedAt": "2026-10-28T12:19:04Z",
+      "sourceRecords": 75,
+      "usable": 75
+    },
+    {
+      "type": "openstreetmap",
+      "area": "Leeuwarden",
+      "url": "https://api.openstreetmap.org/api/0.6/map?bbox=5.7950,53.1980,5.8010,53.2040",
+      "fetchedAt": "2026-10-28T12:19:05Z",
+      "sourceRecords": 48,
+      "usable": 48
+    },
+    {
+      "type": "openstreetmap",
+      "area": "Maastricht",
+      "url": "https://api.openstreetmap.org/api/0.6/map?bbox=5.6880,50.8470,5.6940,50.8530",
+      "fetchedAt": "2026-10-28T12:19:07Z",
+      "sourceRecords": 123,
+      "usable": 123
+    },
+    {
+      "type": "openstreetmap",
+      "area": "Groningen",
+      "url": "https://api.openstreetmap.org/api/0.6/map?bbox=6.5650,53.2160,6.5710,53.2220",
+      "fetchedAt": "2026-10-28T12:19:07Z",
+      "sourceRecords": 95,
+      "usable": 95
+    },
+    {
+      "type": "openstreetmap",
+      "area": "Den Bosch",
+      "url": "https://api.openstreetmap.org/api/0.6/map?bbox=5.3010,51.6860,5.3070,51.6920",
+      "fetchedAt": "2026-10-28T12:19:08Z",
+      "sourceRecords": 157,
+      "usable": 157
+    },
+    {
+      "type": "openstreetmap",
+      "area": "Haarlem",
+      "url": "https://api.openstreetmap.org/api/0.6/map?bbox=4.6330,52.3780,4.6390,52.3840",
+      "fetchedAt": "2026-10-28T12:19:09Z",
+      "sourceRecords": 80,
+      "usable": 80
+    },
+    {
+      "type": "openstreetmap",
+      "area": "Zwolle",
+      "url": "https://api.openstreetmap.org/api/0.6/map?bbox=6.0910,52.5090,6.0970,52.5150",
+      "fetchedAt": "2026-10-28T12:19:10Z",
+      "sourceRecords": 67,
+      "usable": 66
+    },
+    {
+      "type": "openstreetmap",
+      "area": "Middelburg",
+      "url": "https://api.openstreetmap.org/api/0.6/map?bbox=3.6110,51.4960,3.6170,51.5020",
+      "fetchedAt": "2026-10-28T12:19:11Z",
+      "sourceRecords": 58,
+      "usable": 58
+    },
+    {
+      "type": "openstreetmap",
+      "area": "Den Haag",
+      "url": "https://api.openstreetmap.org/api/0.6/map?bbox=4.3080,52.0750,4.3140,52.0810",
+      "fetchedAt": "2026-10-28T12:19:11Z",
+      "sourceRecords": 79,
+      "usable": 79
+    },
+    {
+      "type": "openstreetmap",
+      "area": "Rotterdam",
+      "url": "https://api.openstreetmap.org/api/0.6/map?bbox=4.4760,51.9190,4.4820,51.9250",
+      "fetchedAt": "2026-10-28T12:19:12Z",
+      "sourceRecords": 81,
+      "usable": 81
+    },
+    {
+      "type": "openstreetmap",
+      "area": "Amsterdam",
+      "url": "https://api.openstreetmap.org/api/0.6/map?bbox=4.8900,52.3700,4.8960,52.3760",
+      "fetchedAt": "2026-10-28T12:19:12Z",
+      "sourceRecords": 106,
+      "usable": 106
+    },
+    {
+      "type": "openstreetmap",
+      "area": "Eindhoven",
+      "url": "https://api.openstreetmap.org/api/0.6/map?bbox=5.4750,51.4360,5.4810,51.4420",
+      "fetchedAt": "2026-10-28T12:19:13Z",
+      "sourceRecords": 144,
+      "usable": 144
+    },
+    {
+      "type": "openstreetmap",
+      "area": "Enschede",
+      "url": "https://api.openstreetmap.org/api/0.6/map?bbox=6.8930,52.2180,6.8990,52.2240",
+      "fetchedAt": "2026-10-28T12:19:14Z",
+      "sourceRecords": 84,
+      "usable": 84
+    },
+    {
+      "type": "openstreetmap",
+      "area": "Nijmegen",
+      "url": "https://api.openstreetmap.org/api/0.6/map?bbox=5.8610,51.8430,5.8670,51.8490",
+      "fetchedAt": "2026-10-28T12:19:15Z",
+      "sourceRecords": 118,
+      "usable": 118
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "abn_amro_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/abn_amro_nl.geojson",
+      "fetchedAt": "2026-10-28T12:17:56Z",
+      "datasetDate": "2026-10-17",
+      "sourceRecords": 3834,
+      "usable": 0
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "albert_heijn_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/albert_heijn_nl.geojson",
+      "fetchedAt": "2026-10-28T12:17:55Z",
+      "datasetDate": "2026-10-10",
+      "sourceRecords": 1099,
+      "usable": 1078
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "aldi_nord_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/aldi_nord_nl.geojson",
+      "fetchedAt": "2026-10-28T12:17:55Z",
+      "datasetDate": "2026-10-17",
+      "sourceRecords": 453,
+      "usable": 453
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "bakker_bart_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/bakker_bart_nl.geojson",
+      "fetchedAt": "2026-10-28T12:18:09Z",
+      "datasetDate": "2026-10-17",
+      "sourceRecords": 140,
+      "usable": 140
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "barrique_de_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/barrique_de_nl.geojson",
+      "fetchedAt": "2026-10-28T12:17:56Z",
+      "datasetDate": "2026-10-17",
+      "sourceRecords": 22,
+      "usable": 1
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "bauhaus_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/bauhaus_nl.geojson",
+      "fetchedAt": "2026-10-28T12:17:56Z",
+      "datasetDate": "2026-10-17",
+      "sourceRecords": 4,
+      "usable": 4
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "bever_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/bever_nl.geojson",
+      "fetchedAt": "2026-10-28T12:17:56Z",
+      "datasetDate": "2026-10-17",
+      "sourceRecords": 43,
+      "usable": 1
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "bike_totaal_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/bike_totaal_nl.geojson",
+      "fetchedAt": "2026-10-28T12:17:58Z",
+      "datasetDate": "2026-10-17",
+      "sourceRecords": 172,
+      "usable": 172
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "blokker_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/blokker_nl.geojson",
+      "fetchedAt": "2026-10-28T12:17:57Z",
+      "datasetDate": "2026-10-17",
+      "sourceRecords": 62,
+      "usable": 0
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "bo_rent_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/bo_rent_nl.geojson",
+      "fetchedAt": "2026-10-28T12:17:57Z",
+      "datasetDate": "2026-10-17",
+      "sourceRecords": 94,
+      "usable": 52
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "brainwash_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/brainwash_nl.geojson",
+      "fetchedAt": "2026-10-28T12:17:57Z",
+      "datasetDate": "2026-10-17",
+      "sourceRecords": 138,
+      "usable": 104
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "bruna_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/bruna_nl.geojson",
+      "fetchedAt": "2026-10-28T12:22:06Z",
+      "datasetDate": "2026-10-17",
+      "sourceRecords": 255,
+      "usable": 254
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "bufkes_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/bufkes_nl.geojson",
+      "fetchedAt": "2026-10-28T12:17:58Z",
+      "datasetDate": "2026-10-17",
+      "sourceRecords": 41,
+      "usable": 37
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "chocolate_company_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/chocolate_company_nl.geojson",
+      "fetchedAt": "2026-10-28T12:17:59Z",
+      "datasetDate": "2026-10-18",
+      "sourceRecords": 7,
+      "usable": 7
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "claudia_strater_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/claudia_strater_nl.geojson",
+      "fetchedAt": "2026-10-28T12:17:59Z",
+      "datasetDate": "2026-10-18",
+      "sourceRecords": 25,
+      "usable": 24
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "curves_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/curves_nl.geojson",
+      "fetchedAt": "2026-10-28T12:18:00Z",
+      "datasetDate": "2026-10-18",
+      "sourceRecords": 24,
+      "usable": 24
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "da_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/da_nl.geojson",
+      "fetchedAt": "2026-10-28T12:18:25Z",
+      "datasetDate": "2026-10-18",
+      "sourceRecords": 286,
+      "usable": 264
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "de_beren_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/de_beren_nl.geojson",
+      "fetchedAt": "2026-10-28T12:18:02Z",
+      "datasetDate": "2026-10-18",
+      "sourceRecords": 70,
+      "usable": 69
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "de_hypotheekshop_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/de_hypotheekshop_nl.geojson",
+      "fetchedAt": "2026-10-28T12:18:20Z",
+      "datasetDate": "2026-10-18",
+      "sourceRecords": 182,
+      "usable": 182
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "decathlon_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/decathlon_nl.geojson",
+      "fetchedAt": "2026-10-28T12:18:21Z",
+      "datasetDate": "2026-10-18",
+      "sourceRecords": 22,
+      "usable": 20
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "dirck_iii_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/dirck_iii_nl.geojson",
+      "fetchedAt": "2026-10-28T12:18:24Z",
+      "datasetDate": "2026-10-18",
+      "sourceRecords": 92,
+      "usable": 91
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "dirk_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/dirk_nl.geojson",
+      "fetchedAt": "2026-10-28T12:18:25Z",
+      "datasetDate": "2026-10-18",
+      "sourceRecords": 137,
+      "usable": 137
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "dominos_pizza_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/dominos_pizza_nl.geojson",
+      "fetchedAt": "2026-10-28T12:18:25Z",
+      "datasetDate": "2026-10-18",
+      "sourceRecords": 375,
+      "usable": 0
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "douglas_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/douglas_nl.geojson",
+      "fetchedAt": "2026-10-28T12:22:06Z",
+      "datasetDate": "2026-10-18",
+      "sourceRecords": 111,
+      "usable": 110
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "dunkin_be_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/dunkin_be_nl.geojson",
+      "fetchedAt": "2026-10-28T12:18:25Z",
+      "datasetDate": "2026-10-18",
+      "sourceRecords": 35,
+      "usable": 25
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "echte_bakker_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/echte_bakker_nl.geojson",
+      "fetchedAt": "2026-10-28T12:22:06Z",
+      "datasetDate": "2026-10-18",
+      "sourceRecords": 262,
+      "usable": 55
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "ekoplaza_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/ekoplaza_nl.geojson",
+      "fetchedAt": "2026-10-28T12:18:41Z",
+      "datasetDate": "2026-10-18",
+      "sourceRecords": 135,
+      "usable": 135
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "ep_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/ep_nl.geojson",
+      "fetchedAt": "2026-10-28T12:22:06Z",
+      "datasetDate": "2026-10-18",
+      "sourceRecords": 71,
+      "usable": 71
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "etos_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/etos_nl.geojson",
+      "fetchedAt": "2026-10-28T12:18:41Z",
+      "datasetDate": "2026-10-18",
+      "sourceRecords": 509,
+      "usable": 501
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "euromaster_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/euromaster_nl.geojson",
+      "fetchedAt": "2026-10-28T12:22:15Z",
+      "datasetDate": "2026-10-18",
+      "sourceRecords": 98,
+      "usable": 98
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "euromobil_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/euromobil_nl.geojson",
+      "fetchedAt": "2026-10-28T12:18:53Z",
+      "datasetDate": "2026-10-18",
+      "sourceRecords": 54,
+      "usable": 54
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "fieten_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/fieten_nl.geojson",
+      "fetchedAt": "2026-10-28T12:22:06Z",
+      "datasetDate": "2026-10-19",
+      "sourceRecords": 110,
+      "usable": 106
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "five_guys_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/five_guys_nl.geojson",
+      "fetchedAt": "2026-10-28T12:18:55Z",
+      "datasetDate": "2026-10-19",
+      "sourceRecords": 4,
+      "usable": 4
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "fletcher_hotel_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/fletcher_hotel_nl.geojson",
+      "fetchedAt": "2026-10-28T12:19:13Z",
+      "datasetDate": "2026-10-19",
+      "sourceRecords": 149,
+      "usable": 0
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "gall_and_gall_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/gall_and_gall_nl.geojson",
+      "fetchedAt": "2026-10-28T12:19:04Z",
+      "datasetDate": "2026-10-19",
+      "sourceRecords": 620,
+      "usable": 615
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "groen_rijk_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/groen_rijk_nl.geojson",
+      "fetchedAt": "2026-10-28T12:19:05Z",
+      "datasetDate": "2026-10-19",
+      "sourceRecords": 16,
+      "usable": 16
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "gulf_oil_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/gulf_oil_nl.geojson",
+      "fetchedAt": "2026-10-28T12:22:06Z",
+      "datasetDate": "2026-10-19",
+      "sourceRecords": 62,
+      "usable": 60
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "haan_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/haan_nl.geojson",
+      "fetchedAt": "2026-10-28T12:19:16Z",
+      "datasetDate": "2026-10-19",
+      "sourceRecords": 1189,
+      "usable": 0
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "hizi_hair_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/hizi_hair_nl.geojson",
+      "fetchedAt": "2026-10-28T12:19:20Z",
+      "datasetDate": "2026-02-22",
+      "sourceRecords": 75,
+      "usable": 75
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "hubo_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/hubo_nl.geojson",
+      "fetchedAt": "2026-10-28T12:19:23Z",
+      "datasetDate": "2026-10-19",
+      "sourceRecords": 157,
+      "usable": 157
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "hyundai_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/hyundai_nl.geojson",
+      "fetchedAt": "2026-10-28T12:19:20Z",
+      "datasetDate": "2026-10-19",
+      "sourceRecords": 123,
+      "usable": 121
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "intersport_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/intersport_nl.geojson",
+      "fetchedAt": "2026-10-28T12:19:21Z",
+      "datasetDate": "2026-10-19",
+      "sourceRecords": 38,
+      "usable": 0
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "jumbo_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/jumbo_nl.geojson",
+      "fetchedAt": "2026-10-28T12:19:46Z",
+      "datasetDate": "2026-10-19",
+      "sourceRecords": 756,
+      "usable": 0
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "karwei_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/karwei_nl.geojson",
+      "fetchedAt": "2026-10-28T12:19:26Z",
+      "datasetDate": "2026-07-05",
+      "sourceRecords": 128,
+      "usable": 128
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "keurslager_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/keurslager_nl.geojson",
+      "fetchedAt": "2026-10-28T12:22:06Z",
+      "datasetDate": "2026-10-11",
+      "sourceRecords": 272,
+      "usable": 271
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "kfc_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/kfc_nl.geojson",
+      "fetchedAt": "2026-10-28T12:19:28Z",
+      "datasetDate": "2026-10-19",
+      "sourceRecords": 95,
+      "usable": 93
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "kinki_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/kinki_nl.geojson",
+      "fetchedAt": "2026-10-28T12:19:32Z",
+      "datasetDate": "2026-02-22",
+      "sourceRecords": 39,
+      "usable": 39
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "kpn_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/kpn_nl.geojson",
+      "fetchedAt": "2026-10-28T12:19:35Z",
+      "datasetDate": "2026-10-19",
+      "sourceRecords": 86,
+      "usable": 0
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "kwik_fit_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/kwik_fit_nl.geojson",
+      "fetchedAt": "2026-10-28T12:19:32Z",
+      "datasetDate": "2026-10-19",
+      "sourceRecords": 162,
+      "usable": 161
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "leen_bakker_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/leen_bakker_nl.geojson",
+      "fetchedAt": "2026-10-28T12:19:33Z",
+      "datasetDate": "2026-10-19",
+      "sourceRecords": 83,
+      "usable": 83
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "libris_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/libris_nl.geojson",
+      "fetchedAt": "2026-10-28T12:19:42Z",
+      "datasetDate": "2026-10-20",
+      "sourceRecords": 242,
+      "usable": 241
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "maes_mobility_be_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/maes_mobility_be_nl.geojson",
+      "fetchedAt": "2026-10-28T12:19:35Z",
+      "datasetDate": "2026-10-20",
+      "sourceRecords": 1735,
+      "usable": 158
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "manpower_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/manpower_nl.geojson",
+      "fetchedAt": "2026-10-28T12:20:00Z",
+      "datasetDate": "2026-10-20",
+      "sourceRecords": 22,
+      "usable": 22
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "mazda_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/mazda_nl.geojson",
+      "fetchedAt": "2026-10-28T12:19:42Z",
+      "datasetDate": "2026-10-20",
+      "sourceRecords": 85,
+      "usable": 85
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "mitra_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/mitra_nl.geojson",
+      "fetchedAt": "2026-10-28T12:20:01Z",
+      "datasetDate": "2026-10-20",
+      "sourceRecords": 101,
+      "usable": 101
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "nettorama_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/nettorama_nl.geojson",
+      "fetchedAt": "2026-10-28T12:19:46Z",
+      "datasetDate": "2026-10-20",
+      "sourceRecords": 85,
+      "usable": 85
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "odido_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/odido_nl.geojson",
+      "fetchedAt": "2026-10-28T12:19:49Z",
+      "datasetDate": "2026-10-21",
+      "sourceRecords": 112,
+      "usable": 0
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "ok_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/ok_nl.geojson",
+      "fetchedAt": "2026-10-28T12:19:49Z",
+      "datasetDate": "2026-10-21",
+      "sourceRecords": 274,
+      "usable": 0
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "optie1_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/optie1_nl.geojson",
+      "fetchedAt": "2026-10-28T12:19:59Z",
+      "datasetDate": "2026-10-21",
+      "sourceRecords": 42,
+      "usable": 36
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "pathe_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/pathe_nl.geojson",
+      "fetchedAt": "2026-10-28T12:19:52Z",
+      "datasetDate": "2026-10-21",
+      "sourceRecords": 31,
+      "usable": 0
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "pets_place_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/pets_place_nl.geojson",
+      "fetchedAt": "2026-10-28T12:19:53Z",
+      "datasetDate": "2026-10-21",
+      "sourceRecords": 171,
+      "usable": 171
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "phone_house_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/phone_house_nl.geojson",
+      "fetchedAt": "2026-10-28T12:19:53Z",
+      "datasetDate": "2026-10-21",
+      "sourceRecords": 42,
+      "usable": 0
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "pipoos_be_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/pipoos_be_nl.geojson",
+      "fetchedAt": "2026-10-28T12:19:54Z",
+      "datasetDate": "2026-10-21",
+      "sourceRecords": 39,
+      "usable": 34
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "plus_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/plus_nl.geojson",
+      "fetchedAt": "2026-10-28T12:20:33Z",
+      "datasetDate": "2026-10-21",
+      "sourceRecords": 439,
+      "usable": 439
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "poiesz_supermarkten_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/poiesz_supermarkten_nl.geojson",
+      "fetchedAt": "2026-10-28T12:20:11Z",
+      "datasetDate": "2026-10-21",
+      "sourceRecords": 152,
+      "usable": 152
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "praxis_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/praxis_nl.geojson",
+      "fetchedAt": "2026-10-28T12:20:02Z",
+      "datasetDate": "2026-10-21",
+      "sourceRecords": 139,
+      "usable": 139
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "primera_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/primera_nl.geojson",
+      "fetchedAt": "2026-10-28T12:20:01Z",
+      "datasetDate": "2026-10-12",
+      "sourceRecords": 545,
+      "usable": 543
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "rataplan_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/rataplan_nl.geojson",
+      "fetchedAt": "2026-10-28T12:20:02Z",
+      "datasetDate": "2026-10-21",
+      "sourceRecords": 50,
+      "usable": 49
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "sani_dump_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/sani_dump_nl.geojson",
+      "fetchedAt": "2026-10-28T12:20:03Z",
+      "datasetDate": "2026-10-21",
+      "sourceRecords": 40,
+      "usable": 38
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "scapino_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/scapino_nl.geojson",
+      "fetchedAt": "2026-10-28T12:20:03Z",
+      "datasetDate": "2026-10-22",
+      "sourceRecords": 200,
+      "usable": 197
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "service_apotheek_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/service_apotheek_nl.geojson",
+      "fetchedAt": "2026-10-28T12:20:03Z",
+      "datasetDate": "2026-10-12",
+      "sourceRecords": 506,
+      "usable": 0
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "spar_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/spar_nl.geojson",
+      "fetchedAt": "2026-10-28T12:20:03Z",
+      "datasetDate": "2026-10-22",
+      "sourceRecords": 420,
+      "usable": 410
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "start_people_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/start_people_nl.geojson",
+      "fetchedAt": "2026-10-28T12:20:04Z",
+      "datasetDate": "2026-10-22",
+      "sourceRecords": 69,
+      "usable": 67
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "stayokay_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/stayokay_nl.geojson",
+      "fetchedAt": "2026-10-28T12:20:04Z",
+      "datasetDate": "2026-10-22",
+      "sourceRecords": 22,
+      "usable": 21
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "sunbelt_rentals_gb_ie_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/sunbelt_rentals_gb_ie_nl.geojson",
+      "fetchedAt": "2026-10-28T12:20:05Z",
+      "datasetDate": "2026-10-22",
+      "sourceRecords": 151,
+      "usable": 1
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "taco_bell_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/taco_bell_nl.geojson",
+      "fetchedAt": "2026-10-28T12:20:05Z",
+      "datasetDate": "2026-10-22",
+      "sourceRecords": 9,
+      "usable": 9
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "terstal_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/terstal_nl.geojson",
+      "fetchedAt": "2026-10-28T12:20:05Z",
+      "datasetDate": "2026-10-22",
+      "sourceRecords": 208,
+      "usable": 202
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "texaco_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/texaco_nl.geojson",
+      "fetchedAt": "2026-10-28T12:20:05Z",
+      "datasetDate": "2026-10-22",
+      "sourceRecords": 181,
+      "usable": 72
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "tommy_hilfiger_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/tommy_hilfiger_nl.geojson",
+      "fetchedAt": "2026-10-28T12:20:05Z",
+      "datasetDate": "2026-10-22",
+      "sourceRecords": 13,
+      "usable": 13
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "toolstation_be_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/toolstation_be_nl.geojson",
+      "fetchedAt": "2026-10-28T12:20:06Z",
+      "datasetDate": "2026-10-22",
+      "sourceRecords": 110,
+      "usable": 0
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "van_dal_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/van_dal_nl.geojson",
+      "fetchedAt": "2026-10-28T12:20:06Z",
+      "datasetDate": "2026-10-23",
+      "sourceRecords": 49,
+      "usable": 49
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "vanharen_be_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/vanharen_be_nl.geojson",
+      "fetchedAt": "2026-10-28T12:20:16Z",
+      "datasetDate": "2026-10-23",
+      "sourceRecords": 130,
+      "usable": 130
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "vodafoneziggo_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/vodafoneziggo_nl.geojson",
+      "fetchedAt": "2026-10-28T12:20:15Z",
+      "datasetDate": "2026-10-23",
+      "sourceRecords": 84,
+      "usable": 0
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "we_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/we_nl.geojson",
+      "fetchedAt": "2026-10-28T12:20:16Z",
+      "datasetDate": "2026-10-23",
+      "sourceRecords": 87,
+      "usable": 87
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "welkoop_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/welkoop_nl.geojson",
+      "fetchedAt": "2026-10-28T12:20:16Z",
+      "datasetDate": "2026-10-23",
+      "sourceRecords": 165,
+      "usable": 164
+    },
+    {
+      "type": "alltheplaces",
+      "dataset": "xenos_nl",
+      "url": "https://data.alltheplaces.xyz/runs/latest/output/xenos_nl.geojson",
+      "fetchedAt": "2026-10-28T12:20:16Z",
+      "datasetDate": "2026-10-23",
+      "sourceRecords": 163,
+      "usable": 163
+    }
+  ]
+}

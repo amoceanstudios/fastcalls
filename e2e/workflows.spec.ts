@@ -1,4 +1,17 @@
 import { test, expect, type Page } from "@playwright/test";
+// Core workflows use an empty, isolated catalogue. A dedicated test below
+// verifies automatic loading with explicit fixtures instead of real leads.
+async function isolateCatalog(page: Page) {
+  await page.route("**/data/company-catalog/manifest.json", (route) =>
+    route.fulfill({
+      status: 404,
+      json: { error: "No catalogue in this isolated test" },
+    }),
+  );
+}
+test.beforeEach(async ({ page }) => {
+  await isolateCatalog(page);
+});
 const csv =
   "Nr;Bedrijf;Plaats;Telefoon;Website;Sector / Type;Wat Amocean kan betekenen\n1;Fictief Browsertest BV;Utrecht;0301234567;https://example.org;Techniek;Een klantenportaal voor werkbonnen\n2;Fictief Tweede BV;Amersfoort;0612345678;;Bouw;Digitale planning";
 async function importData(page: Page) {
@@ -181,6 +194,7 @@ test("back-up export en herstel in een nieuwe browsercontext", async ({
   const path = await dl.path();
   const context = await browser.newContext();
   const fresh = await context.newPage();
+  await isolateCatalog(fresh);
   await fresh.goto("http://127.0.0.1:4173/data");
   await fresh.getByLabel("JSON-back-up kiezen").setInputFiles(path!);
   await fresh.getByRole("button", { name: "Herstel bevestigen" }).click();
@@ -469,6 +483,7 @@ test("routenavigatie laadt alleen de bedoelde route alvast en hergebruikt die", 
   });
   try {
     const page = await context.newPage();
+    await isolateCatalog(page);
     const routes: string[] = [];
     const errors: string[] = [];
     page.on("response", (response) => {
@@ -621,6 +636,7 @@ test("micro-animaties blijven kort en verminderde beweging houdt alle inhoud toe
   });
   try {
     const reduced = await context.newPage();
+    await isolateCatalog(reduced);
     await reduced.goto("/");
     await expect(
       reduced.getByRole("heading", { name: "Overzicht", exact: true }),
@@ -1091,4 +1107,78 @@ test("een ontbrekende ophaaldienst wordt duidelijk gemeld zonder bedrijven op te
   ).toBeVisible();
   await page.goto("/prospects");
   await expect(page.locator(".prospect-card")).toHaveCount(0);
+});
+
+test("meegeleverde bedrijven worden automatisch geladen en blijven na herladen behouden", async ({
+  page,
+}) => {
+  const { createProspect } = await import("../src/lib/models");
+  const { createHash } = await import("node:crypto");
+  const record = createProspect({
+    id: "atp-fictieve-catalogus-001",
+    companyName: "Fictief Automatisch Catalogusbedrijf",
+    city: "Utrecht",
+    province: "Utrecht",
+    address: "Fictieve straat 1",
+    phone: "0301234567",
+    email: "contact@example.org",
+    sector: "Horeca",
+    source: "alltheplaces",
+    sourceUrl: "https://example.org/catalogus#vestiging=1",
+    sourceLicense: "All the Places · CC0 1.0",
+    sourceFetchedAt: "2026-10-28T12:00:00.000Z",
+    sourceDatasetDate: "2026-10-10",
+  });
+  const text = JSON.stringify([record]);
+  const manifest = {
+    version: "nl-fictieve-e2e",
+    generatedAt: "2026-10-28T12:00:00.000Z",
+    count: 1,
+    withEmail: 1,
+    shards: [
+      {
+        file: "companies-001.json",
+        count: 1,
+        sha256: createHash("sha256").update(text).digest("hex"),
+      },
+    ],
+  };
+  let downloads = 0;
+  await page.route("**/data/company-catalog/manifest.json", (route) =>
+    route.fulfill({ json: manifest }),
+  );
+  await page.route("**/data/company-catalog/companies-001.json", (route) => {
+    downloads++;
+    return route.fulfill({ contentType: "application/json", body: text });
+  });
+  await page.goto("/prospects");
+  await expect(
+    page.getByRole("link", {
+      name: "Fictief Automatisch Catalogusbedrijf",
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "All the Places-bron", exact: true }),
+  ).toHaveAttribute("href", "https://example.org/catalogus#vestiging=1");
+  await page
+    .getByRole("link", {
+      name: "Fictief Automatisch Catalogusbedrijf",
+      exact: true,
+    })
+    .click();
+  await page.getByRole("button", { name: "Bewerken", exact: true }).click();
+  await page
+    .getByRole("combobox", { name: "Status", exact: true })
+    .selectOption("CUSTOMER");
+  await page.getByRole("button", { name: "Opslaan", exact: true }).click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await page.reload();
+  await expect(
+    page.locator(".detail-header").getByText("Klant geworden", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Bronbestand verzameld op 2026-10-10.", { exact: true }),
+  ).toBeVisible();
+  expect(downloads).toBe(1);
 });
