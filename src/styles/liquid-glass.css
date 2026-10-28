@@ -1,0 +1,520 @@
+/* Crystal surfaces: a visible scene, transparent tint and sharp reflected edges. */
+:root {
+  --liquid-fill: rgba(255, 255, 255, 0.36);
+  --liquid-reflection: linear-gradient(
+    135deg,
+    #ffffff9c 0%,
+    #ffffff28 32%,
+    #ffffff0a 65%,
+    #ffffff4a 100%
+  );
+  --liquid-edge: rgba(255, 255, 255, 0.7);
+  --liquid-highlight: rgba(255, 255, 255, 0.95);
+  --liquid-shadow:
+    0 14px 40px #214d6c12, inset 0 1px 0 #ffffffed, inset 1px 0 0 #ffffff70,
+    inset 0 -1px 0 #588caa18;
+  --liquid-control: rgba(255, 255, 255, 0.34);
+  --liquid-control-edge: rgba(72, 109, 133, 0.3);
+  --liquid-action: rgba(12, 149, 180, 0.12);
+  --liquid-action-ink: #075469;
+  --liquid-blur: 6px;
+  --glass-bg: rgba(242, 250, 255, 0.55);
+  --muted: #4c5b68;
+  --bg: #e9f2f7;
+  --radius-md: 22px;
+  --radius-lg: 30px;
+  --radius-sm: 14px;
+}
+[data-theme="dark"] {
+  --liquid-fill: rgba(6, 18, 31, 0.25);
+  --liquid-reflection: linear-gradient(
+    135deg,
+    #ffffff13 0%,
+    #ffffff03 36%,
+    #ffffff00 64%,
+    #7ae9ff09 100%
+  );
+  --liquid-edge: rgba(211, 239, 255, 0.23);
+  --liquid-highlight: rgba(235, 249, 255, 0.55);
+  --liquid-shadow:
+    0 18px 48px #00000024, inset 0 1px 0 #ffffff30, inset 1px 0 0 #ffffff0b,
+    inset 0 -1px 0 #8ceaff0d;
+  --liquid-control: rgba(4, 16, 29, 0.28);
+  --liquid-control-edge: rgba(198, 231, 255, 0.23);
+  --liquid-action: rgba(34, 211, 238, 0.16);
+  --liquid-action-ink: #d2f9ff;
+  --glass-bg: rgba(8, 22, 36, 0.38);
+  --muted: #bacbd9;
+  --bg: #050b13;
+  --illustration-top: rgba(51, 160, 199, 0.16);
+  --illustration-bottom: rgba(6, 18, 32, 0.34);
+  --illustration-edge: rgba(167, 239, 255, 0.4);
+}
+.app-shell {
+  isolation: isolate;
+}
+.glass-scene {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 70% 9%, #8dc4e92b, transparent 49%),
+    radial-gradient(ellipse at 12% 73%, #48a9cb21, transparent 42%),
+    linear-gradient(135deg, #dfeaf1, #f0f7fb 52%, #dfedf4);
+}
+[data-theme="dark"] .glass-scene {
+  background:
+    radial-gradient(ellipse at 76% 8%, #2088ba32, transparent 48%),
+    radial-gradient(ellipse at 0% 64%, #176f942b, transparent 49%),
+    radial-gradient(ellipse at 87% 91%, #26678526, transparent 44%),
+    linear-gradient(132deg, #07101c, #050b13 47%, #081925);
+}
+.glass-scene::before,
+.glass-scene::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  border-radius: 50%;
+  transform: rotate(-32deg);
+}
+.glass-scene::before {
+  width: 1100px;
+  height: 500px;
+  right: -380px;
+  top: 5%;
+  border: 1px solid #95deff20;
+  background: linear-gradient(175deg, #b2efff0e, transparent 55%);
+  box-shadow: inset 0 2px 0 #e0faff0b;
+}
+.glass-scene::after {
+  width: 1000px;
+  height: 440px;
+  left: -530px;
+  top: 46%;
+  border: 1px solid #87e7ff20;
+  background: linear-gradient(10deg, #88dcff0b, transparent 65%);
+}
+html[data-theme]
+  :is(
+    .panel,
+    .welcome-panel,
+    .next-panel,
+    .opportunity-panel,
+    .empty,
+    .filter-bar,
+    .prospect-card,
+    .session-stats
+  ) {
+  position: relative;
+  background-color: var(--liquid-fill);
+  background-image: var(--liquid-reflection);
+  border: 1px solid var(--liquid-edge);
+  border-top-color: var(--liquid-highlight);
+  border-radius: var(--radius-md);
+  box-shadow: var(--liquid-shadow);
+  -webkit-backdrop-filter: blur(var(--liquid-blur)) saturate(125%);
+  backdrop-filter: blur(var(--liquid-blur)) saturate(125%);
+}
+html[data-theme] :is(.welcome-panel, .next-panel) {
+  border-radius: var(--radius-lg);
+}
+html[data-theme]
+  :is(.panel, .welcome-panel, .next-panel, .opportunity-panel, .empty)::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 22px;
+  right: 40%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--liquid-highlight),
+    transparent
+  );
+  pointer-events: none;
+}
+html[data-theme] .sidebar {
+  inset: 16px auto 16px 16px;
+  width: 216px;
+  border: 1px solid var(--liquid-edge);
+  border-top-color: var(--liquid-highlight);
+  border-radius: 28px;
+  background: var(--glass-bg);
+  box-shadow: var(--liquid-shadow);
+  -webkit-backdrop-filter: blur(6px) saturate(130%);
+  backdrop-filter: blur(6px) saturate(130%);
+}
+.app-body {
+  margin-left: 248px;
+}
+html[data-theme] .topbar {
+  top: 16px;
+  height: 60px;
+  margin: 16px 26px 0;
+  padding: 0 20px;
+  border: 1px solid var(--liquid-edge);
+  border-top-color: var(--liquid-highlight);
+  border-radius: 22px;
+  background: var(--glass-bg) !important;
+  box-shadow: var(--liquid-shadow);
+}
+html[data-theme] .sidebar nav a.active,
+html[data-theme] .settings-link.active {
+  background: var(--liquid-action);
+  color: var(--liquid-action-ink);
+  border: 1px solid var(--liquid-control-edge);
+  box-shadow: inset 0 1px 0 #ffffff17;
+}
+.sidebar nav a,
+.settings-link {
+  border: 1px solid transparent;
+}
+.metric-grid {
+  border: 0;
+  padding: 0;
+  gap: 14px;
+  margin: 0 0 22px;
+}
+.metric,
+.metric:first-child,
+.metric:last-child {
+  position: relative;
+  padding: 18px 20px;
+  border: 1px solid var(--liquid-edge);
+  border-top-color: var(--liquid-highlight);
+  border-radius: 20px;
+  background: var(--liquid-reflection), var(--liquid-fill);
+  box-shadow: var(--liquid-shadow);
+  -webkit-backdrop-filter: blur(var(--liquid-blur));
+  backdrop-filter: blur(var(--liquid-blur));
+}
+.metric strong {
+  margin-top: 11px;
+  font-size: 30px;
+}
+.metric-arrow {
+  right: 18px;
+  bottom: 21px;
+}
+html[data-theme] .prospect-grid {
+  gap: 12px;
+  border: 0;
+  background: transparent;
+  overflow: visible;
+}
+html[data-theme] .prospect-card {
+  border-radius: 20px;
+  padding: 18px 20px;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+html[data-theme] .prospect-card:last-child {
+  border-bottom: 1px solid var(--liquid-edge);
+}
+html[data-theme] .session-stats {
+  padding: 20px;
+}
+button,
+.button {
+  border-color: var(--liquid-control-edge);
+  border-top-color: var(--liquid-edge);
+  background: var(--liquid-reflection), var(--liquid-control);
+  box-shadow: inset 0 1px 0 #ffffff0e;
+  border-radius: var(--radius-sm);
+}
+button:hover,
+.button:hover {
+  background: var(--liquid-reflection), var(--liquid-action);
+  border-color: var(--liquid-highlight);
+}
+html[data-theme] .primary {
+  background:
+    linear-gradient(135deg, #7cecff15, transparent 65%), var(--liquid-action);
+  border: 1px solid #29b4ce85;
+  border-top-color: #92f0ffb3;
+  color: var(--liquid-action-ink);
+  box-shadow:
+    inset 0 1px 0 #d5faff26,
+    0 4px 20px #15bbe509;
+}
+html[data-theme] .primary:hover {
+  background:
+    linear-gradient(135deg, #7cecff25, transparent 65%), var(--liquid-action);
+  color: var(--liquid-action-ink);
+  border-color: #72e7f2;
+  box-shadow:
+    inset 0 1px 0 #d5faff40,
+    0 6px 24px #15bbe51a;
+}
+input,
+select,
+textarea {
+  background: var(--liquid-control);
+  border-color: var(--liquid-control-edge);
+  box-shadow: inset 0 1px 5px #00000009;
+  border-radius: var(--radius-sm);
+}
+select option {
+  background: var(--panel);
+  color: var(--text);
+}
+.quick-status {
+  background: var(--liquid-control);
+  border: 1px solid var(--liquid-control-edge);
+}
+.search-box input {
+  background: transparent;
+  box-shadow: none;
+}
+.tabs button,
+.icon-button,
+.text-link {
+  background: transparent;
+  box-shadow: none;
+}
+.icon-button {
+  border-color: transparent;
+}
+.tabs button:hover,
+.icon-button:hover,
+.text-link:hover {
+  background: var(--liquid-control);
+}
+html[data-theme] .modal-content {
+  background: var(--liquid-reflection), var(--glass-bg);
+  border: 1px solid var(--liquid-edge);
+  border-top-color: var(--liquid-highlight);
+  box-shadow:
+    0 32px 100px #00000059,
+    inset 0 1px 0 #ffffff45;
+  border-radius: 28px;
+  -webkit-backdrop-filter: blur(6px) saturate(140%);
+  backdrop-filter: blur(6px) saturate(140%);
+}
+.modal-overlay {
+  background: #02081199;
+}
+html[data-theme] .mobile-nav,
+html[data-theme] .mobile-sales-bar {
+  background: var(--liquid-reflection), var(--glass-bg);
+  border: 1px solid var(--liquid-edge);
+  border-top-color: var(--liquid-highlight);
+  box-shadow: var(--liquid-shadow);
+  -webkit-backdrop-filter: blur(6px) saturate(130%);
+  backdrop-filter: blur(6px) saturate(130%);
+}
+html[data-theme] .toast:not(.error) {
+  background: var(--glass-bg);
+  color: var(--text);
+  border-color: var(--liquid-edge);
+  box-shadow: var(--liquid-shadow);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+html[data-theme] .upload-zone,
+html[data-theme] .company-image-field {
+  background: var(--liquid-control);
+  border-color: var(--liquid-control-edge);
+}
+html[data-theme] .note-preview,
+html[data-theme] .shortcut-icon {
+  background: var(--liquid-control);
+  border: 1px solid var(--liquid-control-edge);
+}
+html[data-theme] .danger {
+  background: #a32a3a;
+  color: #fff;
+  border-color: #c65663;
+}
+html[data-theme] .danger:hover {
+  background: #8e2330;
+  color: #fff;
+}
+@media (hover: hover) and (pointer: fine) {
+  html[data-theme] .prospect-card:hover {
+    background-color: var(--liquid-action);
+    background-image: var(--liquid-reflection);
+    box-shadow: var(--liquid-shadow);
+    border-color: var(--liquid-highlight);
+  }
+}
+@media (max-width: 1200px) {
+  html[data-theme] .sidebar {
+    width: 195px;
+    left: 12px;
+    top: 12px;
+    bottom: 12px;
+  }
+  .app-body {
+    margin-left: 219px;
+  }
+  html[data-theme] .topbar {
+    margin-inline: 22px;
+  }
+  .metric,
+  .metric:first-child,
+  .metric:last-child {
+    padding: 16px;
+  }
+}
+@media (max-width: 960px) {
+  html[data-theme] .sidebar {
+    width: 180px;
+    left: 10px;
+    top: 10px;
+    bottom: 10px;
+  }
+  .app-body {
+    margin-left: 200px;
+  }
+  html[data-theme] .topbar {
+    margin-inline: 20px;
+  }
+  .metric-grid {
+    gap: 10px;
+  }
+  .metric,
+  .metric:first-child,
+  .metric:last-child {
+    padding: 15px 12px;
+  }
+  .metric-label {
+    font-size: 10px;
+  }
+  .metric-arrow {
+    right: 12px;
+    bottom: 17px;
+  }
+}
+@media (max-width: 700px) {
+  :root {
+    --liquid-blur: 3px;
+  }
+  .app-body {
+    margin-left: 0;
+  }
+  html[data-theme] .topbar {
+    top: 10px;
+    margin: 10px 12px 0;
+    padding: 0 14px;
+    border-radius: 20px;
+    height: 58px;
+  }
+  main {
+    padding-top: 24px;
+    padding-bottom: 135px;
+  }
+  .metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 0;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  .metric,
+  .metric:first-child,
+  .metric:nth-child(2),
+  .metric:nth-child(3),
+  .metric:nth-child(n + 3),
+  .metric:last-child {
+    padding: 16px;
+    border: 1px solid var(--liquid-edge);
+    border-top-color: var(--liquid-highlight);
+    border-radius: 19px;
+  }
+  .metric-label {
+    font-size: 11px;
+    min-height: 0;
+  }
+  .metric strong {
+    font-size: 27px;
+    margin-top: 9px;
+  }
+  .metric-arrow {
+    display: block;
+    right: 15px !important;
+    bottom: 20px !important;
+  }
+  html[data-theme] .prospect-card,
+  html[data-theme] .prospect-card:last-child {
+    padding: 18px;
+    border-radius: 22px;
+  }
+  html[data-theme] .mobile-nav {
+    inset: auto 10px 10px;
+    border-radius: 26px;
+    padding: 7px 4px calc(8px + env(safe-area-inset-bottom));
+  }
+  .mobile-nav a.active > svg {
+    background: var(--liquid-action);
+    border: 1px solid var(--liquid-control-edge);
+  }
+  html[data-theme] .mobile-sales-bar {
+    left: 10px;
+    right: 10px;
+    bottom: calc(90px + env(safe-area-inset-bottom));
+    padding: 10px;
+    border-radius: 22px;
+  }
+  .detail-grid {
+    padding-bottom: 100px;
+  }
+  html[data-theme] .modal-content {
+    border-radius: 24px;
+  }
+  .glass-scene::before {
+    right: -700px;
+    top: 10%;
+  }
+  .glass-scene::after {
+    left: -760px;
+    top: 55%;
+  }
+}
+@supports not (
+  (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
+) {
+  html[data-theme]
+    :is(
+      .panel,
+      .welcome-panel,
+      .next-panel,
+      .opportunity-panel,
+      .empty,
+      .filter-bar,
+      .sidebar,
+      .topbar,
+      .modal-content,
+      .mobile-nav,
+      .mobile-sales-bar
+    ) {
+    background: var(--panel) !important;
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --liquid-fill: var(--panel);
+    --liquid-control: var(--soft);
+    --glass-bg: var(--panel);
+    --liquid-reflection: none;
+  }
+  html[data-theme]
+    :is(
+      .panel,
+      .welcome-panel,
+      .next-panel,
+      .opportunity-panel,
+      .empty,
+      .filter-bar,
+      .sidebar,
+      .topbar,
+      .modal-content,
+      .mobile-nav,
+      .mobile-sales-bar
+    ) {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}

@@ -4,7 +4,7 @@ Een donkere, creatieve saleswerkruimte met een rustige basis, cyaan als primair 
 
 ## Tokens
 
-De bron staat in `src/styles/tokens.css`.
+De basistokens staan in `src/styles/tokens.css`; de crystal-oppervlakken en hun overrides staan in `src/styles/liquid-glass.css`.
 
 | Onderdeel        | Keuze                                                         |
 | ---------------- | ------------------------------------------------------------- |
@@ -25,7 +25,11 @@ Op mobiel blijven tekstinvoervelden 16 px om ongewenste browserzoom te voorkomen
 
 ## Glassmorphism
 
-Alleen de sticky header, modals en mobiele verkoopactiebalk krijgen een subtiel transparant oppervlak. De ondergrond is bijna dekkend om contrast te behouden. Blur is maximaal 6 px; geen blur op de paginaachtergrond, kaarten of prospectlijst. Zonder ondersteuning blijven de vlakken bruikbaar.
+De actuele richting is **crystal / liquid glass**: transparante kaarten, tellers, invoervelden en zwevende navigatie boven een zichtbare oceaanachtergrond. De glaspanelen combineren een donkere basistint met 25% alpha, lichte reflecties, een heldere bovenrand en een dunne contour. De transparantie zit in de achtergrondlagen, nooit in de tekst.
+
+De achtergrond bestaat uit statische CSS-gradients en grote gebogen contouren. Er zijn geen geanimeerde filters, canvas-effecten of muisvolgende vervormingen. Blur is maximaal 6 px; mobiele kaarten gebruiken 3 px. Prospectregels gebruiken geen backdrop-filter, zodat een lange lijst niet voor iedere regel een extra blurlaag krijgt.
+
+De sidebar, header en mobiele navigatie zweven los van de schermrand. De eerstvolgende actie staat boven de glazen statistiekkaarten. De lichte variant heeft transparante witte oppervlakken met donkere tekst. Ontbrekende filterondersteuning en de systeemvoorkeur voor verminderde transparantie krijgen een beter dekkende variant.
 
 ## Beweging
 

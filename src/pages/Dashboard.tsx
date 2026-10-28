@@ -105,15 +105,6 @@ export default function Dashboard() {
           Prospect toevoegen
         </button>
       </header>
-      <div className="metric-grid">
-        {metrics.map((metric) => (
-          <Link className="metric" key={metric.label} to={metric.to}>
-            <span className="metric-label">{metric.label}</span>
-            <strong>{metric.value}</strong>
-            <ArrowUpRight className="metric-arrow" size={15} />
-          </Link>
-        ))}
-      </div>
       {!prospects.length ? (
         <Reveal className="welcome-panel">
           <div className="welcome-copy">
@@ -217,6 +208,15 @@ export default function Dashboard() {
           </Link>
         </Reveal>
       )}
+      <div className="metric-grid">
+        {metrics.map((metric) => (
+          <Link className="metric" key={metric.label} to={metric.to}>
+            <span className="metric-label">{metric.label}</span>
+            <strong>{metric.value}</strong>
+            <ArrowUpRight className="metric-arrow" size={15} />
+          </Link>
+        ))}
+      </div>
       <div className="dashboard-columns">
         <Reveal className="panel">
           <div className="section-title">

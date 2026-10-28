@@ -172,6 +172,7 @@ function Shell() {
       onFocusCapture={warmRoute}
       onTouchStart={warmRoute}
     >
+      <div className="glass-scene" aria-hidden="true" />
       <a className="skip-link" href="#main">
         Naar inhoud
       </a>
