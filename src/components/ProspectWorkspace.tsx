@@ -1,7 +1,7 @@
 import { CompanyMark } from "./CompanyMark";
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams, useLocation } from "react-router-dom";
 import {
   ArrowLeft,
   ArrowRight,
@@ -62,7 +62,11 @@ export function FollowUpRow({
   const action = useAction();
   const [remove, setRemove] = useState(false);
   return (
-    <div className={`followup-row ${f.completedAt ? "completed" : ""}`}>
+    <div
+      id={`followup-${f.id}`}
+      tabIndex={-1}
+      className={`followup-row ${f.completedAt ? "completed" : ""}`}
+    >
       <button
         className="check-button"
         aria-label={
@@ -118,7 +122,15 @@ export function FollowUpRow({
     </div>
   );
 }
-function EmailComposer({ p, onClose }: { p: Prospect; onClose: () => void }) {
+function EmailComposer({
+  p,
+  onClose,
+  draftId,
+}: {
+  p: Prospect;
+  onClose: () => void;
+  draftId?: string;
+}) {
   const data = useLiveQuery(
     async () => ({
       profile: (await db.settings.get("profile"))?.value as
@@ -136,15 +148,26 @@ function EmailComposer({ p, onClose }: { p: Prospect; onClose: () => void }) {
       open
       onClose={onClose}
     >
-      {data ? <EmailForm key={p.id} p={p} data={data} /> : <p>Laden…</p>}
+      {data ? (
+        <EmailForm
+          key={`${p.id}:${draftId || "latest"}`}
+          p={p}
+          data={data}
+          draftId={draftId}
+        />
+      ) : (
+        <p>Laden…</p>
+      )}
     </Modal>
   );
 }
 function EmailForm({
   p,
   data,
+  draftId,
 }: {
   p: Prospect;
+  draftId?: string;
   data: {
     profile?: typeof defaultProfile;
     drafts: Draft[];
@@ -153,9 +176,9 @@ function EmailForm({
   };
 }) {
   const profile = data.profile ?? defaultProfile;
-  const recent = [...data.drafts].sort((a, b) =>
-    b.updatedAt.localeCompare(a.updatedAt),
-  )[0];
+  const recent =
+    data.drafts.find((draft) => draft.id === draftId) ??
+    [...data.drafts].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0];
   const [template, setTemplate] = useState(
     recent?.template ?? profile.template,
   );
@@ -437,8 +460,52 @@ export default function ProspectWorkspace({
   );
   const [edit, setEdit] = useState(false);
   const [schedule, setSchedule] = useState<FollowUp | "new" | null>(null);
-  const [email, setEmail] = useState(false);
-  const [tab, setTab] = useState("notes");
+  const [params, setParams] = useSearchParams();
+  const location = useLocation();
+  const focused = useRef("");
+  const [email, setEmail] = useState(Boolean(params.get("draft")));
+  const tab = ["notes", "followups", "calls", "activity"].includes(
+    params.get("tab") || "",
+  )
+    ? params.get("tab")!
+    : "notes";
+  const setTab = (value: string) =>
+    setParams(
+      (previous) => {
+        const next = new URLSearchParams(previous);
+        next.set("tab", value);
+        return next;
+      },
+      { state: location.state },
+    );
+  useEffect(() => {
+    if (!data || !location.hash || email) return;
+    const key = `${p.id}:${tab}:${location.hash}`;
+    if (focused.current === key) return;
+    let id: string;
+    try {
+      id = decodeURIComponent(location.hash.slice(1));
+    } catch {
+      return;
+    }
+    const target = document.getElementById(id);
+    if (target) {
+      focused.current = key;
+      target.scrollIntoView({ block: "center" });
+      target.focus({ preventScroll: true });
+    }
+  }, [data, location.hash, p.id, tab, email]);
+  const closeEmail = () => {
+    setEmail(false);
+    setParams(
+      (previous) => {
+        const next = new URLSearchParams(previous);
+        next.delete("draft");
+        return next;
+      },
+      { replace: true, state: location.state },
+    );
+  };
   const [noteText, setNoteText] = useWorkingDraft(`note-draft-${p.id}`);
   const [editNote, setEditNote] = useState<Note | null>(null);
   const [remove, setRemove] = useState<Note | null>(null);
@@ -447,7 +514,9 @@ export default function ProspectWorkspace({
   const [outcome, setOutcome] =
     useState<NonNullable<Call["outcome"]>>("SPOKEN");
   const action = useAction();
-  const pending = data?.c.find((c) => !c.outcome);
+  const pending =
+    data?.c.find((c) => c.id === params.get("call") && !c.outcome) ??
+    data?.c.find((c) => !c.outcome);
   const submitNote = async () => {
     setBusy(true);
     if (await action(() => saveNote(p.id, noteText))) setNoteText("");
@@ -544,6 +613,8 @@ export default function ProspectWorkspace({
               <label>
                 Gespreksnotitie
                 <textarea
+                  id="call-summary"
+                  aria-label="Gespreksnotitie"
                   value={callSummary}
                   onChange={(e) => setCallSummary(e.target.value)}
                   placeholder="Wat is besproken?"
@@ -618,6 +689,8 @@ export default function ProspectWorkspace({
                     <label>
                       Notitie toevoegen
                       <textarea
+                        id="note-input"
+                        aria-label="Notitie toevoegen"
                         rows={3}
                         value={noteText}
                         onChange={(e) => setNoteText(e.target.value)}
@@ -638,7 +711,12 @@ export default function ProspectWorkspace({
                     </div>
                   </form>
                   {data?.n.map((n) => (
-                    <article className="note-item" key={n.id}>
+                    <article
+                      id={`note-${n.id}`}
+                      tabIndex={-1}
+                      className="note-item"
+                      key={n.id}
+                    >
                       <div className="section-title">
                         <span className="small muted">
                           {dateLabel(n.createdAt)}
@@ -697,7 +775,12 @@ export default function ProspectWorkspace({
               {tab === "calls" && (
                 <>
                   {data?.c.map((c) => (
-                    <div className="activity-row" key={c.id}>
+                    <div
+                      id={`call-${c.id}`}
+                      tabIndex={-1}
+                      className="activity-row"
+                      key={c.id}
+                    >
                       <Phone size={17} />
                       <div>
                         <strong>
@@ -849,7 +932,13 @@ export default function ProspectWorkspace({
           onClose={() => setSchedule(null)}
         />
       )}{" "}
-      {email && <EmailComposer p={p} onClose={() => setEmail(false)} />}{" "}
+      {email && (
+        <EmailComposer
+          p={p}
+          onClose={closeEmail}
+          draftId={params.get("draft") || undefined}
+        />
+      )}{" "}
       {remove && (
         <Confirm
           title="Notitie verwijderen?"

@@ -124,9 +124,9 @@ Open een bedrijfsprofiel en kies **Bewerken → Bedrijfslogo of foto**. PNG, JPE
 
 ### Nieuw dagoverzicht
 
-Het dashboard is ingedeeld naar dagelijkse acties. **Wie belt u nu?** toont één bedrijf, waarom het prioriteit krijgt en de belknop. **Wat volgt u op?** scheidt vandaag en achterstallig; taken kunnen rechtstreeks worden afgerond. Een gestarte belactie zonder bevestigde uitkomst krijgt een aparte melding. Bedrijfsstatussen en daadwerkelijk afgeronde acties staan lager; historie en recente notities zijn uitklapbaar.
+Het dashboard is ingedeeld naar dagelijkse acties. **Wie belt u nu?** toont één bedrijf, waarom het prioriteit krijgt en de belknop. **Wat volgt u op?** scheidt vandaag en achterstallig; taken kunnen rechtstreeks worden afgerond. Een gestarte belactie zonder bevestigde uitkomst krijgt een aparte melding. Bedrijfsstatussen en daadwerkelijk afgeronde acties staan lager; uw opgeslagen werk en recente notities staan direct bovenaan. Alle notities en historie zijn bereikbaar via Mijn werk.
 
-Zonder bedrijven toont de app één importstap in plaats van een dashboard vol lege statistieken. Desktopnavigatie scheidt dagelijkse routes en beheer. Mobiel zijn er vijf duidelijke keuzes: Overzicht, Bedrijven, Bellen, Agenda en Meer. Gegevens/back-ups en Instellingen staan onder Meer.
+Zonder bedrijven toont de app één importstap in plaats van een dashboard vol lege statistieken. Desktopnavigatie scheidt dagelijkse routes en beheer. Mobiel zijn er vijf duidelijke keuzes: Overzicht, Mijn werk, Bedrijven, Agenda en Meer. Belmodus, Gegevens/back-ups en Instellingen staan onder Meer.
 
 Dashboardstatuslinks openen een schoon statusfilter, zodat een eerder bewaarde plaats- of sectorfilter niet onbedoeld bedrijven verbergt. `src/lib/dashboard.ts` berekent de aantallen uit echte records. De aanvullende indelingsregels staan in `src/styles/overview.css`. Browserchecks verifiëren ook het afronden van dashboardtaken, de mobiele Meer-navigatie en een zichtbare belactie op een 390 × 664 viewport zonder scrollen.
 
@@ -155,3 +155,15 @@ De browser valideert elk bestand inclusief SHA-256 en slaat het in een transacti
 Reproduceren van het gecontroleerde catalogusbestand uit de bewaarde downloads kan met `node scripts/build-company-catalog.mjs /workspace/artifacts/company-research`. De ruwe downloads staan buiten Git. Dit script valideert records, gebruikt actuele CBS-grenzen, classificeert branches, verwijdert herhaalde identiteiten en schrijft de catalogus en het bronrapport opnieuw. Voer geen onbedoelde herpublicatie uit zonder de nieuwe aantallen en brondata te controleren. Reguliere `npm run build` doet geen nieuwe scraping en kopieert de meegeleverde snapshots alleen naar `dist`.
 
 De tests gebruiken uitsluitend fictieve fixtures in geïsoleerde databases. De automatische import is daarnaast gecontroleerd met de daadwerkelijk meegeleverde lijst. De CSV- en Excel-exports en volledige back-ups bewaren de contact- en brongegevens.
+
+## Mijn werk: opgeslagen informatie terugvinden op mobiel
+
+**Mijn werk** staat permanent in de mobiele navigatie en desktopzijbalk. Het dashboard begint met snelkoppelingen naar notities, terugbellen, eigen bedrijven en conceptmails. De nieuwste notitie en eerstvolgende afspraak zijn zichtbaar zonder een verborgen historiesectie te openen.
+
+De route `/work` toont alle opgeslagen notities, open en afgeronde terugbelafspraken, gestarte en bevestigde belacties, conceptmails, bedrijven waar eigen werk bij hoort en de bijbehorende activiteiten. Geïmporteerde bronrecords en importactiviteiten vullen de persoonlijke werkstroom niet. Niet-afgemaakte notitie- en gespreksinvoer uit de bestaande instellingen wordt eveneens getoond, met een expliciet label en zonder een verzonnen opslagdatum. Een bewaarde Terugbellen-status zonder aparte taak blijft vindbaar.
+
+Zoeken werkt op volledige notitie-/concepttekst, bedrijfsnaam, telefoon, e-mailadres en status. Filters en zoektekst staan in de URL, zodat teruggaan de zoekcontext herstelt. Links openen de juiste profieltab en richten de aandacht direct op de betreffende notitie, afspraak of belactie. Een specifiek opgeslagen mailconcept wordt geopend op zijn eigen identifier. Teruggaan brengt de gebruiker naar de eerdere Mijn werk-filter. Afspraken kunnen rechtstreeks worden afgerond of heropend; afgeronde afspraken blijven opgeslagen en terug te vinden.
+
+Deze verandering wijzigt **geen databanknaam, schemaversie, entiteitsmodel, catalogusbestand of opslag-/herstelroutine**. De nieuwe verzamelweergaven lezen bestaande records. De mobiele behoudtest vergelijkt de volledige inhoud van prospects, notes, followups, calls, activities, drafts en settings vóór en na zoeken, openen en herladen: de inhoud moet exact gelijk blijven. Alle fixtures blijven geïsoleerd van echte gebruiksgegevens. Gewone handelingen zoals een afspraak afronden gebruiken de bestaande opslagfuncties en vereisen een expliciete gebruikersactie.
+
+De mobiele interface heeft vier grote persoonlijke snelkoppelingen, leesbare tekst, aanraakvlakken van minimaal 44 px en zoekt zonder de volledige bedrijvenlijst te renderen. Zoekresultaten worden in stappen van 30 getoond. Profieltabs staan op kleine schermen in twee kolommen. De bestaande donkere crystal-glasshuisstijl, lichte modus en verminderde beweging blijven ondersteund.

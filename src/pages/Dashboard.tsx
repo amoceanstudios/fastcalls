@@ -1,5 +1,7 @@
+import { buildPersonalWork, filterPersonalWork } from "../lib/personalWork";
+import { PersonalOverview } from "../components/PersonalOverview";
+import { usePersonalWork } from "../hooks/usePersonalWork";
 import { useDeferredValue, useMemo, useRef, useState } from "react";
-import { useLiveQuery } from "dexie-react-hooks";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
@@ -10,15 +12,12 @@ import {
   Upload,
   Check,
   Search,
-  Clock3,
   MessageSquare,
-  Activity,
-  ChevronDown,
   CheckCheck,
   ArrowDownToLine,
   Settings2,
 } from "lucide-react";
-import { db, saveFollowUp } from "../db/database";
+import { saveFollowUp } from "../db/database";
 import { now, normalizeText, type FollowUp } from "../lib/models";
 import { summarizeDashboard } from "../lib/dashboard";
 import { dateLabel } from "../lib/logic";
@@ -32,17 +31,7 @@ import { useMinute } from "../hooks/useMinute";
 type AgendaFilter = "all" | "overdue" | "today";
 export default function Dashboard() {
   const minute = useMinute();
-  const data = useLiveQuery(async () => ({
-    prospects: await db.prospects.toArray(),
-    followups: await db.followups.toArray(),
-    activities: await db.activities
-      .orderBy("createdAt")
-      .reverse()
-      .limit(5)
-      .toArray(),
-    notes: await db.notes.orderBy("createdAt").reverse().limit(3).toArray(),
-    calls: await db.calls.toArray(),
-  }));
+  const data = usePersonalWork();
   const [add, setAdd] = useState(false);
   const [search, setSearch] = useState("");
   const deferredSearch = useDeferredValue(search);
@@ -66,8 +55,19 @@ export default function Dashboard() {
           .slice(0, 5)
       : [];
   }, [data, deferredSearch]);
+  const savedResults = useMemo(
+    () =>
+      data && deferredSearch.trim()
+        ? filterPersonalWork(
+            buildPersonalWork(data).items,
+            "all",
+            deferredSearch,
+          ).slice(0, 3)
+        : [],
+    [data, deferredSearch],
+  );
   if (!data || !summary) return <p role="status">Overzicht laden…</p>;
-  const { prospects, activities, notes } = data;
+  const { prospects } = data;
   const { next, companies, pendingCalls } = summary;
   const agenda =
     filter === "overdue"
@@ -117,7 +117,7 @@ export default function Dashboard() {
                 <Search size={17} />
                 <input
                   aria-label="Snel prospects zoeken"
-                  placeholder="Zoek een bedrijf…"
+                  placeholder="Zoek bedrijf of notitie…"
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
                 />
@@ -126,21 +126,35 @@ export default function Dashboard() {
                 <div
                   className="overview-search-results"
                   role="region"
-                  aria-label="Gevonden bedrijven"
+                  aria-label="Zoekresultaten"
                 >
-                  {results.length ? (
-                    results.map((company) => (
-                      <Link key={company.id} to={`/prospects/${company.id}`}>
-                        <span>
-                          <strong>{company.companyName}</strong>
-                          <small>{company.city}</small>
-                        </span>
-                        <ArrowUpRight size={16} />
-                      </Link>
-                    ))
-                  ) : (
-                    <p>Geen bedrijven gevonden.</p>
-                  )}
+                  {savedResults.map((item) => (
+                    <Link
+                      key={item.id}
+                      to={item.href}
+                      state={{ workReturn: "/" }}
+                    >
+                      <span>
+                        <strong>{item.company.companyName}</strong>
+                        <small>
+                          {item.label} ·{" "}
+                          {item.content.slice(0, 70) || item.title}
+                        </small>
+                      </span>
+                      <ArrowUpRight size={16} />
+                    </Link>
+                  ))}
+                  {results.length
+                    ? results.map((company) => (
+                        <Link key={company.id} to={`/prospects/${company.id}`}>
+                          <span>
+                            <strong>{company.companyName}</strong>
+                            <small>{company.city}</small>
+                          </span>
+                          <ArrowUpRight size={16} />
+                        </Link>
+                      ))
+                    : !savedResults.length && <p>Geen resultaten gevonden.</p>}
                 </div>
               )}
             </div>
@@ -151,6 +165,7 @@ export default function Dashboard() {
           </button>
         </div>
       </header>
+      <PersonalOverview data={data} />
       {!prospects.length ? (
         <>
           <Reveal className="welcome-panel overview-welcome">
@@ -465,71 +480,6 @@ export default function Dashboard() {
               </dl>
             </Reveal>
           </div>
-          <Reveal className="panel overview-history">
-            <details>
-              <summary>
-                <Activity size={17} />
-                <span>Recente activiteit</span>
-                <span className="small muted">
-                  {activities.length}{" "}
-                  {activities.length === 1 ? "recente actie" : "recente acties"}
-                </span>
-                <ChevronDown size={16} />
-              </summary>
-              {activities.length ? (
-                activities.map((item) => (
-                  <Link
-                    className="activity-row"
-                    key={item.id}
-                    to={`/prospects/${item.prospectId}`}
-                  >
-                    <span className="activity-dot" />
-                    <div>
-                      <strong>
-                        {companies.get(item.prospectId)?.companyName}
-                      </strong>
-                      <p>{item.description}</p>
-                      <small>{dateLabel(item.createdAt)}</small>
-                    </div>
-                  </Link>
-                ))
-              ) : (
-                <p className="muted small padded">
-                  Uw eerste acties verschijnen hier.
-                </p>
-              )}
-            </details>
-            <details>
-              <summary>
-                <MessageSquare size={17} />
-                <span>Laatste notities</span>
-                <span className="small muted">
-                  {notes.length} recente{" "}
-                  {notes.length === 1 ? "notitie" : "notities"}
-                </span>
-                <ChevronDown size={16} />
-              </summary>
-              {notes.length ? (
-                notes.map((note) => (
-                  <Link
-                    className="history-note"
-                    to={`/prospects/${note.prospectId}`}
-                    key={note.id}
-                  >
-                    <strong>
-                      {companies.get(note.prospectId)?.companyName}
-                    </strong>
-                    <p>{note.content}</p>
-                    <small>{dateLabel(note.updatedAt)}</small>
-                  </Link>
-                ))
-              ) : (
-                <p className="muted small padded">
-                  Nog geen notities opgeslagen.
-                </p>
-              )}
-            </details>
-          </Reveal>
         </>
       )}
       {add && <ProspectForm onClose={() => setAdd(false)} />}

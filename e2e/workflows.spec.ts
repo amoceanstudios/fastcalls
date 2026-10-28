@@ -131,7 +131,7 @@ test("mobiele import, notities, status, opvolging, e-mail, back-up en offline he
   await page.getByRole("button", { name: "Notitie opslaan" }).click();
   await page.reload();
   await expect(
-    page.getByText("Offline vastgelegd", { exact: true }),
+    page.locator(".note-item").getByText("Offline vastgelegd", { exact: true }),
   ).toBeVisible();
   expect(errors).toEqual([]);
   expect(
@@ -411,6 +411,7 @@ test("contrast in de resterende schermen en de desktopzijbalk", async ({
     "/prospects",
     "/calling",
     "/followups",
+    "/work",
     "/data",
     "/settings",
   ]) {
@@ -816,17 +817,17 @@ test("mobiele navigatie houdt dagelijkse acties vooraan en beheer bereikbaar via
   await expect(more).toBeFocused();
 });
 
-test("de primaire belactie staat op mobiel boven de vaste navigatie zonder scrollen", async ({
+test("opgeslagen werk staat op mobiel boven de vaste navigatie zonder scrollen", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 664 });
   await importData(page);
   await page.goto("/");
-  const call = page
-    .locator(".focus-actions")
-    .getByRole("link", { name: "Bel nu", exact: true });
-  await expect(call).toBeVisible();
-  const callRect = await call.boundingBox();
+  const shortcut = page
+    .locator(".personal-shortcuts")
+    .getByRole("link", { name: /Mijn notities/ });
+  await expect(shortcut).toBeVisible();
+  const callRect = await shortcut.boundingBox();
   const navRect = await page
     .getByRole("navigation", { name: "Mobiele navigatie" })
     .boundingBox();
@@ -1181,4 +1182,322 @@ test("meegeleverde bedrijven worden automatisch geladen en blijven na herladen b
     page.getByText("Bronbestand verzameld op 2026-10-10.", { exact: true }),
   ).toBeVisible();
   expect(downloads).toBe(1);
+});
+
+async function storedSnapshot(page: Page) {
+  return page.evaluate(
+    () =>
+      new Promise<string>((resolve, reject) => {
+        const request = indexedDB.open("amocean-prospect-os");
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+          const database = request.result;
+          const names = [
+            "prospects",
+            "notes",
+            "followups",
+            "calls",
+            "activities",
+            "drafts",
+            "settings",
+          ];
+          const transaction = database.transaction(names, "readonly");
+          const result: Record<string, unknown> = {};
+          for (const name of names) {
+            const read = transaction.objectStore(name).getAll();
+            read.onsuccess = () => {
+              result[name] = read.result;
+            };
+          }
+          transaction.oncomplete = () => {
+            database.close();
+            resolve(JSON.stringify(result));
+          };
+          transaction.onerror = () => reject(transaction.error);
+        };
+      }),
+  );
+}
+
+test("Mijn werk vindt oude notities, afspraken, gesprekken en concepten zonder opgeslagen inhoud te wijzigen", async ({
+  page,
+}) => {
+  await importData(page);
+  await openCompany(page);
+  for (const text of [
+    "Oudere afspraak: eigenaar wil een offerte voor een klantenportaal",
+    "Nieuwere notitie: later verder praten",
+  ]) {
+    await page.getByLabel("Notitie toevoegen", { exact: true }).fill(text);
+    await page
+      .getByRole("button", { name: "Notitie opslaan", exact: true })
+      .click();
+    await expect(page.getByText(text, { exact: true })).toBeVisible();
+  }
+  await page
+    .getByRole("button", { name: "Opvolging plannen", exact: true })
+    .last()
+    .click();
+  await page
+    .getByRole("textbox", { name: "Onderwerp", exact: true })
+    .fill("Terugbellen over het klantenportaal");
+  await page
+    .getByRole("button", { name: "Opvolging opslaan", exact: true })
+    .click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  const call = page
+    .locator(".mobile-sales-bar")
+    .getByRole("link", { name: "Bel nu", exact: true });
+  await call.evaluate((el) =>
+    el.addEventListener("click", (event) => event.preventDefault()),
+  );
+  await call.click();
+  await page
+    .getByLabel("Gespreksnotitie", { exact: true })
+    .fill("Telefonisch gesproken, voorstel volgt");
+  await page
+    .getByRole("button", { name: "Uitkomst bevestigen", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", {
+      name: "Hoe is het gesprek verlopen?",
+      exact: true,
+    }),
+  ).toHaveCount(0);
+  await page
+    .getByRole("button", { name: "E-mail genereren", exact: true })
+    .click();
+  await page
+    .getByRole("textbox", { name: "Ontvanger (optioneel)", exact: true })
+    .fill("contact@example.org");
+  await page
+    .getByRole("textbox", { name: "Onderwerp", exact: true })
+    .fill("Opgeslagen voorstel voor het klantenportaal");
+  await page
+    .getByRole("textbox", { name: "Bericht", exact: true })
+    .fill("Exact bewaarde concepttekst, nog niet verzonden.");
+  await page
+    .getByRole("button", { name: "Concept opslaan", exact: true })
+    .click();
+  await expect(
+    page.getByRole("dialog").getByText("Concept opgeslagen", { exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Sluiten", exact: true }).click();
+  const before = await storedSnapshot(page);
+  await page.goto("/");
+  await expect(
+    page
+      .locator(".personal-shortcuts")
+      .getByRole("link", { name: /Mijn notities/ }),
+  ).toBeVisible();
+  await page
+    .getByRole("navigation", { name: "Mobiele navigatie" })
+    .getByRole("link", { name: "Mijn werk", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Mijn werk", exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: /^Notities/ }).click();
+  await page
+    .getByRole("textbox", { name: "Mijn opgeslagen werk doorzoeken" })
+    .fill("eigenaar offerte");
+  await expect(page.locator(".work-card")).toHaveCount(1);
+  await page.getByRole("link", { name: "Notitie openen", exact: true }).click();
+  await expect(page.getByRole("tab", { name: /^Notities/ })).toHaveAttribute(
+    "aria-selected",
+    "true",
+  );
+  await expect(page.locator(".note-item:focus")).toContainText(
+    "Oudere afspraak: eigenaar",
+  );
+  await page
+    .getByRole("link", { name: "Terug naar Mijn werk", exact: true })
+    .click();
+  await expect(
+    page.getByRole("textbox", { name: "Mijn opgeslagen werk doorzoeken" }),
+  ).toHaveValue("eigenaar offerte");
+  await page
+    .getByRole("textbox", { name: "Mijn opgeslagen werk doorzoeken" })
+    .fill("");
+  await page.getByRole("button", { name: /^Terugbellen/ }).click();
+  await expect(
+    page.getByRole("heading", {
+      name: "Terugbellen over het klantenportaal",
+      exact: true,
+    }),
+  ).toBeVisible();
+  await page
+    .getByRole("link", { name: "Afspraak openen", exact: true })
+    .click();
+  await expect(page.getByRole("tab", { name: /^Opvolging/ })).toHaveAttribute(
+    "aria-selected",
+    "true",
+  );
+  await expect(page.locator(".followup-row:focus")).toContainText(
+    "Terugbellen over het klantenportaal",
+  );
+  await page
+    .getByRole("link", { name: "Terug naar Mijn werk", exact: true })
+    .click();
+  await page.getByRole("button", { name: /^Belhistorie/ }).click();
+  await expect(page.locator(".work-card")).toContainText(
+    "Telefonisch gesproken, voorstel volgt",
+  );
+  await page.getByRole("button", { name: /^Conceptmails/ }).click();
+  await page.getByRole("link", { name: "Concept openen", exact: true }).click();
+  await expect(
+    page.getByRole("textbox", { name: "Bericht", exact: true }),
+  ).toHaveValue("Exact bewaarde concepttekst, nog niet verzonden.");
+  await page.getByRole("button", { name: "Sluiten", exact: true }).click();
+  await page
+    .getByRole("link", { name: "Terug naar Mijn werk", exact: true })
+    .click();
+  await page.getByRole("button", { name: /^Mijn bedrijven/ }).click();
+  await expect(page.locator(".work-card")).toHaveCount(1);
+  await page.getByRole("button", { name: /^Activiteit/ }).click();
+  await expect(page.locator(".work-card").first()).toBeVisible();
+  await page.reload();
+  await expect(
+    page.getByRole("heading", { name: "Mijn werk", exact: true }),
+  ).toBeVisible();
+  expect(await storedSnapshot(page)).toBe(before);
+  const { default: AxeBuilder } = await import("@axe-core/playwright");
+  for (const width of [320, 390, 430]) {
+    await page.setViewportSize({ width, height: 844 });
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+  }
+  const scan = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+    .analyze();
+  expect(
+    scan.violations.map((v) => ({
+      id: v.id,
+      nodes: v.nodes.map((n) => n.target),
+    })),
+  ).toEqual([]);
+});
+
+test("Mijn werk houdt onafgemaakte invoer zichtbaar en terugbelafspraken kunnen worden heropend", async ({
+  page,
+}) => {
+  await importData(page);
+  await openCompany(page);
+  await page
+    .getByLabel("Notitie toevoegen", { exact: true })
+    .fill("Mijn nog niet definitief opgeslagen tekst");
+  await expect
+    .poll(async () =>
+      JSON.parse(await storedSnapshot(page)).settings.some(
+        (r: { key: string; value: unknown }) =>
+          r.key.startsWith("note-draft-") &&
+          r.value === "Mijn nog niet definitief opgeslagen tekst",
+      ),
+    )
+    .toBe(true);
+  await page.goto("/work?filter=notes");
+  await expect(
+    page.getByText("Mijn nog niet definitief opgeslagen tekst", {
+      exact: true,
+    }),
+  ).toBeVisible();
+  await page
+    .getByRole("link", { name: "Verder schrijven", exact: true })
+    .click();
+  await expect(
+    page.getByLabel("Notitie toevoegen", { exact: true }),
+  ).toHaveValue("Mijn nog niet definitief opgeslagen tekst");
+  await page
+    .getByRole("button", { name: "Opvolging plannen", exact: true })
+    .last()
+    .click();
+  await page
+    .getByRole("textbox", { name: "Onderwerp", exact: true })
+    .fill("Bewaarde terugbelafspraak");
+  await page
+    .getByRole("button", { name: "Opvolging opslaan", exact: true })
+    .click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await page.goto("/work?filter=followups");
+  await page
+    .getByRole("button", { name: "Afspraak afronden", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Opnieuw openen", exact: true }),
+  ).toBeVisible();
+  await page.reload();
+  await expect(
+    page.getByRole("button", { name: "Opnieuw openen", exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Opnieuw openen", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Afspraak afronden", exact: true }),
+  ).toBeVisible();
+  const stored = JSON.parse(await storedSnapshot(page));
+  expect(stored.followups).toHaveLength(1);
+  expect(stored.followups[0].completedAt).toBeNull();
+  expect(
+    stored.settings.find((r: { key: string }) =>
+      r.key.startsWith("note-draft-"),
+    ).value,
+  ).toBe("Mijn nog niet definitief opgeslagen tekst");
+});
+
+test("Mijn werk opent de juiste nog onbevestigde belactie", async ({
+  page,
+}) => {
+  await importData(page);
+  await openCompany(page);
+  const phone = page
+    .locator(".mobile-sales-bar")
+    .getByRole("link", { name: "Bel nu", exact: true });
+  await phone.evaluate((el) =>
+    el.addEventListener("click", (event) => event.preventDefault()),
+  );
+  await phone.click();
+  await expect(
+    page.getByRole("heading", {
+      name: "Hoe is het gesprek verlopen?",
+      exact: true,
+    }),
+  ).toBeVisible();
+  await phone.click();
+  await expect
+    .poll(async () => JSON.parse(await storedSnapshot(page)).calls.length)
+    .toBe(2);
+  const calls = JSON.parse(await storedSnapshot(page)).calls.sort(
+    (a: { initiatedAt: string }, b: { initiatedAt: string }) =>
+      a.initiatedAt.localeCompare(b.initiatedAt),
+  );
+  await page.goto("/work?filter=calls");
+  await page.locator(`.work-open[href*="call=${calls[0].id}"]`).click();
+  await expect(
+    page.getByLabel("Gespreksnotitie", { exact: true }),
+  ).toBeFocused();
+  await page
+    .getByLabel("Gespreksnotitie", { exact: true })
+    .fill("Uitkomst van de oudere belactie");
+  await page
+    .getByRole("button", { name: "Uitkomst bevestigen", exact: true })
+    .click();
+  await expect
+    .poll(
+      async () =>
+        JSON.parse(await storedSnapshot(page)).calls.find(
+          (c: { id: string }) => c.id === calls[0].id,
+        ).outcome,
+    )
+    .toBe("SPOKEN");
+  const after = JSON.parse(await storedSnapshot(page)).calls;
+  expect(
+    after.find((c: { id: string }) => c.id === calls[1].id).outcome,
+  ).toBeNull();
+  expect(after.find((c: { id: string }) => c.id === calls[0].id).summary).toBe(
+    "Uitkomst van de oudere belactie",
+  );
 });

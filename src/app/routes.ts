@@ -13,6 +13,7 @@ function route(load: () => Promise<{ default: ComponentType }>) {
 }
 
 export const screens = {
+  work: route(() => import("../pages/MyWork")),
   dashboard: route(() => import("../pages/Dashboard")),
   prospects: route(() => import("../pages/Directory")),
   detail: route(() => import("../pages/Detail")),

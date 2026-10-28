@@ -77,3 +77,9 @@ Behoud AA-tekstcontrast, een zichtbare focusring en grote aanraakvlakken. Dialog
 Geautomatiseerde browserchecks testen contrast op de hoofdschermen, keyboard/focus, lokale afbeeldingopslag, animatieduur en verminderde beweging. Handmatige controle met een schermlezer en op echte doelapparaten blijft zinvol.
 
 Manrope wordt onder de OFL-licentie meegeleverd; zie `public/fonts/LICENSE-Manrope.txt`.
+
+## Persoonlijke informatie eerst
+
+Het dashboard geeft opgeslagen notities, terugbelafspraken, eigen bedrijven en conceptmails voorrang boven het doorwerken van de volledige catalogus. Mijn werk staat permanent in de mobiele navigatie: Overzicht · Mijn werk · Bedrijven · Agenda · Meer. Belmodus en beheer staan in Meer. Persoonlijke kaarten tonen het bedrijf, soort opgeslagen informatie, datum en inhoud; links gaan naar de juiste bestaande record. Afgeronde afspraken blijven zichtbaar en heropenbaar.
+
+`src/styles/personal-work.css` bevat de responsieve indeling. Op mobiel vormen vier snelkoppelingen een raster van twee kolommen. Zoekfilters hebben expliciete labels en aantallen, geen betekenis die alleen van een pictogram of kleur afhangt. Werkresultaten tonen volledige tekst; alleen dashboardvoorbeelden gebruiken een korte tekstuitsnede met een duidelijke link. De zoekbalk blijft bereikbaar tijdens scrollen. Profieltabs hebben ruime aanraakvlakken in twee kolommen. Focus wordt bij een directe recordlink naar die record verplaatst en teruggaan behoudt de zoekcontext. Er is geen opslagmigratie of reset aan deze weergavewijziging gekoppeld.

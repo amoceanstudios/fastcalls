@@ -31,6 +31,7 @@ import {
   Search,
   RefreshCw,
   Ellipsis,
+  NotebookPen,
 } from "lucide-react";
 import { Illustration } from "./components/Illustration";
 import { db } from "./db/database";
@@ -39,6 +40,7 @@ import { FeedbackProvider, Modal } from "./components/ui";
 import { screens, preloadRoute } from "./app/routes";
 const {
   dashboard: { Component: Dashboard },
+  work: { Component: MyWork },
   prospects: { Component: Directory },
   detail: { Component: Detail },
   calling: { Component: Calling },
@@ -48,9 +50,10 @@ const {
 } = screens;
 const nav = [
   { to: "/", label: "Overzicht", icon: LayoutDashboard },
+  { to: "/work", label: "Mijn werk", icon: NotebookPen },
   { to: "/prospects", label: "Bedrijven", icon: Building2 },
-  { to: "/calling", label: "Belmodus", icon: Phone },
   { to: "/followups", label: "Opvolgingen", icon: CalendarDays },
+  { to: "/calling", label: "Belmodus", icon: Phone },
   { to: "/data", label: "Gegevens & back-ups", icon: Database },
 ];
 class ErrorBoundary extends Component<
@@ -191,7 +194,7 @@ function Shell() {
         </Link>
         <div className="workspace-label">DAGELIJKS</div>
         <nav aria-label="Hoofdnavigatie">
-          {nav.slice(0, 4).map((n) => (
+          {nav.slice(0, 5).map((n) => (
             <NavLink key={n.to} to={n.to} end={n.to === "/"}>
               <n.icon size={19} />
               {n.label}
@@ -282,6 +285,7 @@ function Shell() {
           >
             <Routes>
               <Route path="/" element={<Dashboard />} />
+              <Route path="/work" element={<MyWork />} />
               <Route path="/prospects" element={<Directory />} />
               <Route path="/prospects/:id" element={<Detail />} />
               <Route path="/calling" element={<Calling />} />
@@ -323,11 +327,13 @@ function Shell() {
             </NavLink>
           ))}
           <button
-            className={`mobile-more ${location.pathname === "/data" || location.pathname === "/settings" ? "active" : ""}`}
+            className={`mobile-more ${location.pathname === "/data" || location.pathname === "/settings" || location.pathname === "/calling" ? "active" : ""}`}
             aria-haspopup="dialog"
             aria-expanded={more}
             aria-current={
-              location.pathname === "/data" || location.pathname === "/settings"
+              location.pathname === "/data" ||
+              location.pathname === "/settings" ||
+              location.pathname === "/calling"
                 ? "page"
                 : undefined
             }
@@ -341,11 +347,21 @@ function Shell() {
       {more && (
         <Modal
           title="Meer"
-          description="Beheer uw gegevens en persoonlijke instellingen."
+          description="Belmodus, back-ups en persoonlijke instellingen."
           open
           onClose={() => setMore(false)}
         >
           <div className="more-menu">
+            <Link to="/calling" onClick={() => setMore(false)}>
+              <span className="more-menu-icon">
+                <Phone size={22} />
+              </span>
+              <span>
+                <strong>Belmodus</strong>
+                <small>Gericht bellen en gespreksuitkomsten bewaren</small>
+              </span>
+              <ArrowUpRight size={17} />
+            </Link>
             <Link to="/data" onClick={() => setMore(false)}>
               <span className="more-menu-icon">
                 <Database size={22} />
@@ -385,6 +401,15 @@ function Shell() {
             onChange={(e) => setQuery(e.target.value)}
           />
           <div className="command-results">
+            {query && (
+              <Link
+                to={`/work?q=${encodeURIComponent(query)}`}
+                onClick={() => setCommand(false)}
+              >
+                <NotebookPen size={17} />
+                Zoek “{query}” in mijn opgeslagen werk
+              </Link>
+            )}
             {companies
               .filter(
                 (p) =>
