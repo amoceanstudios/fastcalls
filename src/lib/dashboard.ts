@@ -32,6 +32,12 @@ export function summarizeDashboard(data: DashboardData, today = new Date()) {
     (task) =>
       new Date(task.dueAt) > today && !isSameDay(new Date(task.dueAt), today),
   );
+  const scheduledIds = new Set(open.map((task) => task.prospectId));
+  const unscheduled = data.prospects.filter(
+    (p) =>
+      (p.status === "CALLBACK" || p.status === "FOLLOW_UP") &&
+      !scheduledIds.has(p.id),
+  );
   const queue = callingQueue(data.prospects, open, today);
   const pendingCalls = data.calls
     .filter((call) => !call.outcome && companies.has(call.prospectId))
@@ -72,6 +78,7 @@ export function summarizeDashboard(data: DashboardData, today = new Date()) {
     dueToday,
     due: [...overdue, ...dueToday],
     upcoming,
+    unscheduled,
     pendingCalls,
     statusCounts,
     startedToday: startedToday.length,

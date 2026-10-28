@@ -343,3 +343,27 @@
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+.saved-followup-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--studio-stroke);
+}
+.saved-followup-status:last-child {
+  border-bottom: 0;
+}
+.saved-followup-status p {
+  margin: 4px 0 8px;
+}
+@media (max-width: 600px) {
+  .saved-followup-status {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .saved-followup-status > div {
+    min-width: 0;
+    flex: 1 1 180px;
+  }
+}

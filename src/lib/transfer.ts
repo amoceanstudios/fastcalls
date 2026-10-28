@@ -1,3 +1,4 @@
+import { planCompanyRestore } from "./backupMerge";
 import Papa from "papaparse";
 import { z } from "zod";
 import {
@@ -305,19 +306,57 @@ export async function restoreBackup(
       for (const table of tables) await table.clear();
       await db.settings.put({ key: "bundled-catalog-disabled", value: true });
     }
-    const existing = await db.prospects.toArray();
-    const idMap = new Map<string, string>();
-    let added = 0;
-    for (const p of b.prospects) {
-      const match = existing.find((e) => e.id === p.id || duplicate(e, p));
-      if (match) idMap.set(p.id, match.id);
-      else {
-        await db.prospects.add(p);
-        existing.push(p);
-        idMap.set(p.id, p.id);
-        added++;
-      }
-    }
+    const [
+      existing,
+      localNotes,
+      localFollowups,
+      localCalls,
+      localDrafts,
+      localActivities,
+    ] = await Promise.all([
+      db.prospects.toArray(),
+      db.notes.toArray(),
+      db.followups.toArray(),
+      db.calls.toArray(),
+      db.drafts.toArray(),
+      db.activities.toArray(),
+    ]);
+    const touched = new Set(
+      [
+        ...localNotes,
+        ...localFollowups,
+        ...localCalls,
+        ...localDrafts,
+        ...localActivities.filter((a) => a.type !== "IMPORTED"),
+      ].map((row) => row.prospectId),
+    );
+    const incomingTouched = new Set(
+      [
+        ...b.notes,
+        ...b.followups,
+        ...b.calls,
+        ...b.drafts,
+        ...b.activities.filter((a) => a.type !== "IMPORTED"),
+      ].map((row) => row.prospectId),
+    );
+    for (const p of b.prospects)
+      if (
+        p.status !== "TO_CALL" ||
+        p.priority !== "MEDIUM" ||
+        p.tags.length ||
+        p.followUpAt ||
+        p.lastContactedAt
+      )
+        incomingTouched.add(p.id);
+    const plan = planCompanyRestore(
+      existing,
+      b.prospects,
+      touched,
+      incomingTouched,
+    );
+    if (plan.additions.length) await db.prospects.bulkAdd(plan.additions);
+    if (plan.restored.length) await db.prospects.bulkPut(plan.restored);
+    const addedRecords: Record<string, number> = {};
     for (const [table, rows] of [
       [db.notes, b.notes],
       [db.followups, b.followups],
@@ -325,26 +364,55 @@ export async function restoreBackup(
       [db.calls, b.calls],
       [db.drafts, b.drafts],
     ] as const) {
-      for (const row of rows) {
-        const prospectId = idMap.get(row.prospectId)!;
-        if (!(await table.get(row.id)))
-          await (table as typeof db.notes).add({ ...row, prospectId } as never);
-      }
+      const present = await table.bulkGet(rows.map((row) => row.id));
+      const additions = rows
+        .filter((_, i) => !present[i])
+        .map((row) => ({
+          ...row,
+          prospectId: plan.idMap.get(row.prospectId)!,
+        }));
+      if (additions.length)
+        await (table as typeof db.notes).bulkAdd(additions as never[]);
+      addedRecords[table.name] = additions.length;
     }
-    for (const setting of b.settings)
-      if (setting.key !== "profile" && !(await db.settings.get(setting.key)))
-        await db.settings.put(setting);
+    const savedSettings = await db.settings.bulkGet(
+      b.settings.map((setting) => setting.key),
+    );
+    const newSettings = b.settings.filter(
+      (setting, i) => setting.key !== "profile" && !savedSettings[i],
+    );
+    if (newSettings.length) await db.settings.bulkPut(newSettings);
     if (mode === "replace" || !(await db.settings.get("profile")))
       await db.settings.put({ key: "profile", value: b.profile });
-    for (const p of await db.prospects.toArray()) {
-      const next = (
-        await db.followups.where("prospectId").equals(p.id).toArray()
+    // Keep a saved standalone followUpAt when no separate task exists.
+    const affected = new Set(
+      b.followups.map((row) => plan.idMap.get(row.prospectId)!),
+    );
+    const earliest = new Map<string, string>();
+    for (const f of await db.followups.toArray())
+      if (
+        affected.has(f.prospectId) &&
+        !f.completedAt &&
+        (!earliest.has(f.prospectId) || f.dueAt < earliest.get(f.prospectId)!)
       )
-        .filter((f) => !f.completedAt)
-        .sort((a, b) => a.dueAt.localeCompare(b.dueAt))[0];
-      await db.prospects.update(p.id, { followUpAt: next?.dueAt ?? null });
-    }
-    return added;
+        earliest.set(f.prospectId, f.dueAt);
+    for (const [id, followUpAt] of earliest)
+      await db.prospects.update(id, { followUpAt });
+    const [notes, followups, calls, drafts, callbacks, followUpStatuses] =
+      await Promise.all([
+        db.notes.count(),
+        db.followups.count(),
+        db.calls.count(),
+        db.drafts.count(),
+        db.prospects.where("status").equals("CALLBACK").count(),
+        db.prospects.where("status").equals("FOLLOW_UP").count(),
+      ]);
+    return {
+      companiesAdded: plan.additions.length,
+      workflowsRestored: plan.restored.length,
+      addedRecords,
+      totals: { notes, followups, calls, drafts, callbacks, followUpStatuses },
+    };
   });
 }
 export function download(

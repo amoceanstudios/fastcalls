@@ -1607,3 +1607,124 @@ test("hersteloverzicht toont ongekoppelde en oudere gegevens en exporteert zonde
   ).toBe("Eerder opgeslagen tekst uit oudere database");
   expect(await storedSnapshot(page)).toBe(before);
 });
+
+test("back-up herstelt bewaarde statuskeuzes op een onbewerkte catalogus en toont ze in de agenda", async ({
+  page,
+}) => {
+  const { createProspect, defaultProfile } = await import("../src/lib/models");
+  const one = createProspect({
+    id: "fictief-bron-1",
+    companyName: "Fictieve Terugbel Salon",
+    source: "openstreetmap",
+    website: "https://example.org/vestiging-1",
+    phone: "0101234567",
+  });
+  const two = createProspect({
+    id: "fictief-bron-2",
+    companyName: "Fictieve Opvolg Salon",
+    source: "openstreetmap",
+    website: "https://example.org/vestiging-2",
+    phone: "0201234567",
+  });
+  await page.goto("/data");
+  await page.getByRole("heading", { name: "Gegevens & back-ups." }).waitFor();
+  await page.evaluate(
+    (records) =>
+      new Promise<void>((resolve, reject) => {
+        const r = indexedDB.open("amocean-prospect-os");
+        r.onsuccess = () => {
+          const d = r.result;
+          const t = d.transaction("prospects", "readwrite");
+          records.forEach((p) => t.objectStore("prospects").put(p));
+          t.oncomplete = () => {
+            d.close();
+            resolve();
+          };
+          t.onerror = () => reject(t.error);
+        };
+        r.onerror = () => reject(r.error);
+      }),
+    [one, two],
+  );
+  await page.reload();
+  const stamp = new Date().toISOString();
+  const backup = {
+    format: "amocean-prospect-os",
+    version: 2,
+    exportedAt: stamp,
+    prospects: [
+      { ...one, status: "CALLBACK" },
+      { ...two, status: "FOLLOW_UP" },
+    ],
+    notes: [
+      {
+        id: "fictieve-notitie",
+        prospectId: two.id,
+        content: "Letterlijk bewaarde notitie voor de tweede vestiging",
+        createdAt: stamp,
+        updatedAt: stamp,
+      },
+    ],
+    followups: [],
+    calls: [
+      {
+        id: "fictieve-belactie",
+        prospectId: one.id,
+        initiatedAt: stamp,
+        outcome: null,
+        summary: "",
+        durationSeconds: null,
+        confirmedAt: null,
+      },
+    ],
+    activities: [],
+    drafts: [],
+    settings: [],
+    profile: defaultProfile,
+  };
+  await page.getByLabel("JSON-back-up kiezen").setInputFiles({
+    name: "fictieve-herstel-backup.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(backup)),
+  });
+  await expect(
+    page.getByText("Ook in dit bestand:", { exact: false }),
+  ).toContainText("1 bedrijven op Terugbellen");
+  await expect(
+    page.getByRole("checkbox", {
+      name: "Alle huidige gegevens vervangen door deze back-up",
+    }),
+  ).not.toBeChecked();
+  await page
+    .getByRole("button", { name: "Herstel bevestigen", exact: true })
+    .click();
+  await expect(
+    page.getByText("Back-up hersteld.", { exact: false }),
+  ).toBeVisible();
+  const restored = JSON.parse(await storedSnapshot(page));
+  expect(restored.prospects).toHaveLength(2);
+  expect(
+    restored.prospects.find((p: { id: string }) => p.id === one.id).status,
+  ).toBe("CALLBACK");
+  expect(
+    restored.prospects.find((p: { id: string }) => p.id === two.id).status,
+  ).toBe("FOLLOW_UP");
+  expect(restored.followups).toHaveLength(0);
+  expect(restored.notes[0].prospectId).toBe(two.id);
+  await page.goto("/followups");
+  await expect(page.locator(".saved-followup-status")).toHaveCount(2);
+  await expect(
+    page.getByRole("link", { name: "Fictieve Terugbel Salon", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Fictieve Opvolg Salon", exact: true }),
+  ).toBeVisible();
+  await page.goto("/work?filter=followups");
+  await expect(page.locator(".work-card")).toHaveCount(2);
+  await page.goto("/work?filter=notes");
+  await expect(
+    page.getByText("Letterlijk bewaarde notitie voor de tweede vestiging", {
+      exact: true,
+    }),
+  ).toBeVisible();
+});

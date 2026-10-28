@@ -208,21 +208,24 @@ export function buildPersonalWork(data: PersonalWorkData) {
       href: url(p, "notes"),
       label: "Mijn bedrijf",
     });
-    // A saved CALLBACK status must remain findable even without a scheduled task.
+    // Both saved work statuses must remain visible without a calendar task.
     if (
-      p.status === "CALLBACK" &&
+      (p.status === "CALLBACK" || p.status === "FOLLOW_UP") &&
       !data.followups.some((f) => f.prospectId === p.id && !f.completedAt)
     )
       items.push({
         id: `callback:${p.id}`,
         type: "followups",
         company: p,
-        title: p.followUpAt ? "Terugbellen" : "Terugbellen · datum nog plannen",
-        content:
-          "Dit bedrijf staat op Terugbellen. Er is nog geen openstaande afspraak gepland.",
+        title: p.followUpAt
+          ? statuses[p.status]
+          : `${statuses[p.status]} · datum nog plannen`,
+        content: `Dit bedrijf staat op ${statuses[p.status]}. Deze keuze is opgeslagen; er is nog geen losse afspraak gepland.`,
         at: p.updatedAt,
         href: url(p, "followups"),
-        label: p.followUpAt ? "Terugbellen" : "Terugbellen zonder datum",
+        label: p.followUpAt
+          ? statuses[p.status]
+          : `${statuses[p.status]} zonder datum`,
         dueAt: p.followUpAt || undefined,
         completed: false,
       });

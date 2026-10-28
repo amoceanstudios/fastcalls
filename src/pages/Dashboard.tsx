@@ -415,12 +415,16 @@ export default function Dashboard() {
                         ? "Geen achterstallige opvolgingen"
                         : filter === "today"
                           ? "Geen opvolgingen voor vandaag"
-                          : "Alles bijgewerkt voor vandaag"}
+                          : summary.unscheduled.length
+                            ? `${summary.unscheduled.length} opgeslagen vervolgstappen`
+                            : "Alles bijgewerkt voor vandaag"}
                     </strong>
                     <p>
-                      {summary.upcoming
-                        ? `Volgende: ${companies.get(summary.upcoming.prospectId)?.companyName} · ${dateLabel(summary.upcoming.dueAt, summary.upcoming.dateOnly)}`
-                        : "Plan een vervolgstap vanuit een bedrijfsprofiel."}
+                      {summary.unscheduled.length
+                        ? "Uw bewaarde keuzes Terugbellen en Opvolgen staan in de agenda, ook zonder losse afspraak."
+                        : summary.upcoming
+                          ? `Volgende: ${companies.get(summary.upcoming.prospectId)?.companyName} · ${dateLabel(summary.upcoming.dueAt, summary.upcoming.dateOnly)}`
+                          : "Plan een vervolgstap vanuit een bedrijfsprofiel."}
                     </p>
                   </div>
                 )}

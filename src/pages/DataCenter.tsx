@@ -426,7 +426,7 @@ export default function DataCenter() {
               <b>{backup.notes.length}</b> notities
             </span>
             <span>
-              <b>{backup.followups.length}</b> opvolgingen
+              <b>{backup.followups.length}</b> kalenderafspraken
             </span>
             <span>
               <b>{backup.calls.length}</b> belacties
@@ -436,8 +436,16 @@ export default function DataCenter() {
             </span>
           </div>
           <p>
-            Standaard worden alleen ontbrekende gegevens toegevoegd. Bestaande
-            statussen, teksten en notities worden niet overschreven.
+            Uw huidige notities en eigen wijzigingen blijven staan. Bij
+            bedrijven waaraan u hier nog niet hebt gewerkt, herstellen we ook de
+            bewaarde terugbel- en opvolgstatus.
+          </p>
+          <p className="info-box">
+            Ook in dit bestand:{" "}
+            {backup.prospects.filter((p) => p.status === "CALLBACK").length}{" "}
+            bedrijven op Terugbellen en{" "}
+            {backup.prospects.filter((p) => p.status === "FOLLOW_UP").length} op
+            Opvolgen. Die blijven zichtbaar zonder kalenderafspraak.
           </p>
           <label className="checkbox">
             <input
@@ -471,19 +479,19 @@ export default function DataCenter() {
                 setBusy(true);
                 await action(async () => {
                   await downloadBackup();
-                  const count = await restoreBackup(
+                  const result = await restoreBackup(
                     backup,
                     replace ? "replace" : "merge",
                   );
                   setSummary(
-                    `Back-up hersteld. ${count} bedrijven toegevoegd; gekoppelde gegevens hersteld.`,
+                    `Back-up hersteld. Aanwezig: ${result.totals.notes} notities, ${result.totals.calls} belacties, ${result.totals.callbacks} terugbelstatussen en ${result.totals.followUpStatuses} opvolgstatussen. ${result.workflowsRestored} onbewerkte bedrijfsrecords uit de back-up hersteld; eigen wijzigingen behouden.`,
                   );
                   setBackup(null);
                 }, "Herstel afgerond");
                 setBusy(false);
               }}
             >
-              Herstel bevestigen
+              {busy ? "Gegevens veilig herstellen…" : "Herstel bevestigen"}
             </button>
           </div>
         </Modal>
