@@ -1,3 +1,4 @@
+import { CompanyMark } from "./CompanyMark";
 import { useState, useEffect, useContext } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { Link } from "react-router-dom";
@@ -177,6 +178,7 @@ function EmailForm({
   const [body, setBody] = useState(recent?.body ?? initial.body);
   const [id, setId] = useState(recent?.id ?? uid());
   const [dirty, setDirty] = useState(false);
+  const [generation, setGeneration] = useState(0);
   const [autosave, setAutosave] = useState("");
   const [saving, setSaving] = useState(false);
   const action = useAction();
@@ -195,6 +197,7 @@ function EmailForm({
       });
       setSubject(result.subject);
       setBody(result.body);
+      setGeneration((value) => value + 1);
       setDirty(true);
     } catch (e) {
       notify((e as Error).message, true);
@@ -334,28 +337,30 @@ function EmailForm({
           placeholder="Zelf toevoegen; we raden geen adressen"
         />
       </label>
-      <label>
-        Onderwerp
-        <input
-          value={subject}
-          onChange={(e) => {
-            setSubject(e.target.value);
-            setDirty(true);
-          }}
-        />
-      </label>
-      <label>
-        Bericht
-        <textarea
-          className="email-body"
-          rows={13}
-          value={body}
-          onChange={(e) => {
-            setBody(e.target.value);
-            setDirty(true);
-          }}
-        />
-      </label>
+      <div key={generation} className="generated-result">
+        <label>
+          Onderwerp
+          <input
+            value={subject}
+            onChange={(e) => {
+              setSubject(e.target.value);
+              setDirty(true);
+            }}
+          />
+        </label>
+        <label>
+          Bericht
+          <textarea
+            className="email-body"
+            rows={13}
+            value={body}
+            onChange={(e) => {
+              setBody(e.target.value);
+              setDirty(true);
+            }}
+          />
+        </label>
+      </div>
       <p className="small muted" role="status">
         {autosave || "Concept nog niet gewijzigd"}
       </p>
@@ -464,11 +469,14 @@ export default function ProspectWorkspace({
           <div className="eyebrow">
             {calling ? "FOCUS OP HET GESPREK" : "BEDRIJFSPROFIEL"}
           </div>
-          {calling ? (
-            <h2 className="prospect-heading">{p.companyName}</h2>
-          ) : (
-            <h1>{p.companyName}</h1>
-          )}
+          <div className="company-heading">
+            <CompanyMark p={p} />
+            {calling ? (
+              <h2 className="prospect-heading">{p.companyName}</h2>
+            ) : (
+              <h1>{p.companyName}</h1>
+            )}
+          </div>
           <p className="muted">
             {[p.city, p.sector].filter(Boolean).join(" · ")}
           </p>

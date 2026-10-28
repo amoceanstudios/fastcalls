@@ -1,3 +1,4 @@
+import { Reveal } from "../components/Reveal";
 import { useEffect, useState, useContext } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { Link } from "react-router-dom";
@@ -70,7 +71,7 @@ export default function Settings() {
         }}
       >
         <div className="settings-grid">
-          <section className="panel">
+          <Reveal className="panel">
             <h2>Uw afzenderprofiel</h2>
             <p className="muted small">
               Deze gegevens worden gebruikt in uw e-mailconcepten. Onbekende
@@ -101,9 +102,9 @@ export default function Settings() {
                 amocean.ai
               </a>
             </p>
-          </section>
+          </Reveal>
           <div className="stack">
-            <section className="panel">
+            <Reveal className="panel">
               <h2>Uiterlijk</h2>
               <label>
                 Kleurthema
@@ -130,8 +131,8 @@ export default function Settings() {
                   <option value="compact">Compact</option>
                 </select>
               </label>
-            </section>
-            <section className="panel">
+            </Reveal>
+            <Reveal className="panel">
               <h2>Salesworkflow</h2>
               <label>
                 Standaardwachtrij
@@ -188,7 +189,7 @@ export default function Settings() {
                   ))}
                 </select>
               </label>
-            </section>
+            </Reveal>
           </div>
         </div>
         <div className="form-actions">
@@ -202,7 +203,7 @@ export default function Settings() {
         </div>
       </form>
       <div className="settings-grid">
-        <section className="panel">
+        <Reveal className="panel">
           <h2>
             <HardDrive size={19} />
             Lokale opslag
@@ -243,8 +244,8 @@ export default function Settings() {
           <Link className="button" to="/data">
             Import, export en back-ups
           </Link>
-        </section>
-        <section className="panel">
+        </Reveal>
+        <Reveal className="panel">
           <h2>Over Prospect OS</h2>
           <p>Amocean Prospect OS · versie 1.0.0</p>
           <p className="small muted">
@@ -263,9 +264,9 @@ export default function Settings() {
             Telefoongesprekken en externe websites hebben eigen apparaat- en
             netwerkvereisten. E-mailconcepten genereren werkt offline.
           </p>
-        </section>
+        </Reveal>
       </div>
-      <section className="panel danger-panel">
+      <Reveal className="panel danger-panel">
         <div>
           <h2>Alle lokale gegevens wissen</h2>
           <p className="muted small">
@@ -277,7 +278,7 @@ export default function Settings() {
           <Trash2 size={16} />
           Gegevens wissen
         </button>
-      </section>
+      </Reveal>
       {clear && (
         <Modal
           title="Alle lokale gegevens wissen?"

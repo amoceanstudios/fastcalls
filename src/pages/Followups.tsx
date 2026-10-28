@@ -1,3 +1,4 @@
+import { Reveal } from "../components/Reveal";
 import { useMinute } from "../hooks/useMinute";
 import { useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
@@ -56,7 +57,7 @@ export default function Followups() {
           const rows = data.f.filter((f) => groupFollowUp(f) === group);
           return (
             rows.length > 0 && (
-              <section className="panel followup-group" key={group}>
+              <Reveal className="panel followup-group" key={group}>
                 <h2 className={group === "Achterstallig" ? "red" : ""}>
                   {group} <span className="count">{rows.length}</span>
                 </h2>
@@ -73,7 +74,7 @@ export default function Followups() {
                     )
                   );
                 })}
-              </section>
+              </Reveal>
             )
           );
         })

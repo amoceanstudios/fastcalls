@@ -494,3 +494,25 @@ describe("Importkeuzes en behoud van werk", () => {
     ).toEqual([]);
   });
 });
+
+describe("Lokale bedrijfsafbeeldingen", () => {
+  const raster =
+    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+j1xoAAAAASUVORK5CYII=";
+  it("behoudt een lokaal logo in een volledige back-up en herstel", async () => {
+    const p = company("Fictief met logo", { logoDataUrl: raster });
+    await saveProspect(p);
+    const backup = await makeBackup();
+    await db.prospects.clear();
+    await restoreBackup(backup);
+    expect((await db.prospects.get(p.id))?.logoDataUrl).toBe(raster);
+  });
+  it("accepteert oudere records zonder logo en weigert actieve of externe afbeeldingen", () => {
+    expect(company().logoDataUrl).toBeUndefined();
+    expect(() =>
+      company("SVG", { logoDataUrl: "data:image/svg+xml;base64,PHN2Zz4=" }),
+    ).toThrow();
+    expect(() =>
+      company("Extern", { logoDataUrl: "https://tracker.example/logo.png" }),
+    ).toThrow();
+  });
+});

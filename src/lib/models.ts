@@ -43,6 +43,11 @@ export const ProspectSchema = z.object({
   phone: text,
   phoneNormalized: text,
   website: text,
+  logoDataUrl: z
+    .string()
+    .max(180000)
+    .regex(/^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/]+=*$/)
+    .optional(),
   sector: text,
   valueProposition: text,
   email: z.union([z.literal(""), z.email()]),

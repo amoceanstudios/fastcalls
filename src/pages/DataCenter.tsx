@@ -1,3 +1,4 @@
+import { Reveal } from "../components/Reveal";
 import { useState, useContext, useRef } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
@@ -97,7 +98,7 @@ export default function DataCenter() {
         </span>
       </header>
       <div className="data-columns">
-        <section className="panel import-panel">
+        <Reveal className="panel import-panel">
           <div className="section-icon">
             <Upload size={24} />
           </div>
@@ -145,9 +146,9 @@ export default function DataCenter() {
               Duplicaten worden overgeslagen.
             </span>
           </div>
-        </section>
+        </Reveal>
         <div className="stack">
-          <section className="panel">
+          <Reveal className="panel">
             <h2>Een kopie voor de zekerheid</h2>
             <p className="muted">
               Een volledige JSON-back-up bevat uw bedrijven, notities, historie,
@@ -166,8 +167,8 @@ export default function DataCenter() {
               Bewaar back-ups op een veilige plek. Browsergegevens kunnen door
               uw browser of apparaat worden gewist.
             </p>
-          </section>
-          <section className="panel">
+          </Reveal>
+          <Reveal className="panel">
             <h2>Exporteren</h2>
             <p className="muted small">
               {prospects.length} prospects. CSV bevat de laatste notitie; Excel
@@ -208,10 +209,10 @@ export default function DataCenter() {
                 JSON-lijst
               </button>
             </div>
-          </section>
+          </Reveal>
         </div>
       </div>
-      <section className="panel restore-panel">
+      <Reveal className="panel restore-panel">
         <div>
           <h2>Back-up herstellen</h2>
           <p className="muted">
@@ -247,7 +248,7 @@ export default function DataCenter() {
             }}
           />
         </label>
-      </section>
+      </Reveal>
       {summary && (
         <div className="success-box" role="status">
           <CheckCircle2 size={20} />

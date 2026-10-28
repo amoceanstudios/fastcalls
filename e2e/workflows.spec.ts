@@ -532,3 +532,135 @@ test("routenavigatie laadt alleen de bedoelde route alvast en hergebruikt die", 
     await context.close();
   }
 });
+
+test("bedrijfslogo blijft lokaal, wordt meegenomen in back-up en kan worden verwijderd", async ({
+  page,
+}) => {
+  await importData(page);
+  await openCompany(page);
+  await page.getByRole("button", { name: "Bewerken", exact: true }).click();
+  await page
+    .getByLabel("Bedrijfsafbeelding kiezen")
+    .setInputFiles("public/icons/icon-192.png");
+  await expect(page.locator(".company-image-preview img")).toBeVisible();
+  await page.getByRole("button", { name: "Opslaan", exact: true }).click();
+  const logo = page.locator(".detail-header .company-mark img");
+  await expect(logo).toBeVisible();
+  const data = await logo.getAttribute("src");
+  expect(data).toMatch(/^data:image\/(webp|png);base64,/);
+  await expect
+    .poll(() => logo.evaluate((img: HTMLImageElement) => img.naturalWidth))
+    .toBeGreaterThan(0);
+  expect(
+    await logo.evaluate((img: HTMLImageElement) => img.naturalWidth),
+  ).toBeLessThanOrEqual(192);
+  await page.reload();
+  await expect(logo).toHaveAttribute("src", data!);
+  await page.goto("/data");
+  const pending = page.waitForEvent("download");
+  await page
+    .getByRole("button", { name: "Volledige back-up downloaden" })
+    .click();
+  const file = await pending;
+  const { readFile } = await import("node:fs/promises");
+  const backup = JSON.parse(await readFile((await file.path())!, "utf8"));
+  expect(
+    backup.prospects.find(
+      (p: { companyName: string }) =>
+        p.companyName === "Fictief Browsertest BV",
+    ).logoDataUrl,
+  ).toBe(data);
+  await openCompany(page);
+  await page.getByRole("button", { name: "Bewerken", exact: true }).click();
+  await page.getByLabel("Bedrijfsafbeelding kiezen").setInputFiles({
+    name: "niet-toegestaan.svg",
+    mimeType: "image/svg+xml",
+    buffer: Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"></svg>'),
+  });
+  await expect(page.getByRole("alert")).toContainText("PNG");
+  await expect(page.locator(".company-image-preview img")).toHaveAttribute(
+    "src",
+    data!,
+  );
+  await page.getByRole("button", { name: "Afbeelding verwijderen" }).click();
+  await page.getByRole("button", { name: "Opslaan", exact: true }).click();
+  await expect(page.locator(".detail-header .company-mark img")).toHaveCount(0);
+});
+
+test("micro-animaties blijven kort en verminderde beweging houdt alle inhoud toegankelijk", async ({
+  page,
+  browser,
+}) => {
+  await page.goto("/");
+  const trigger = page.getByRole("button", {
+    name: "Prospect toevoegen",
+    exact: true,
+  });
+  await expect(trigger).toBeVisible();
+  const duration = await trigger.evaluate((el) =>
+    getComputedStyle(el)
+      .transitionDuration.split(",")
+      .map((value) => parseFloat(value)),
+  );
+  expect(Math.max(...duration)).toBeGreaterThan(0);
+  expect(Math.max(...duration)).toBeLessThanOrEqual(0.25);
+  await trigger.click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  expect(
+    await page
+      .getByRole("dialog")
+      .evaluate((el) => parseFloat(getComputedStyle(el).animationDuration)),
+  ).toBeLessThanOrEqual(0.25);
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(trigger).toBeFocused();
+  const context = await browser.newContext({
+    baseURL: "http://127.0.0.1:4173",
+    viewport: { width: 390, height: 844 },
+    reducedMotion: "reduce",
+  });
+  try {
+    const reduced = await context.newPage();
+    await reduced.goto("/");
+    await expect(
+      reduced.getByRole("heading", { name: "Overzicht", exact: true }),
+    ).toBeVisible();
+    await reduced.locator("footer").scrollIntoViewIfNeeded();
+    await expect
+      .poll(() => reduced.locator("[data-reveal]").count())
+      .toBeGreaterThan(0);
+    const sections = await reduced
+      .locator("[data-reveal]")
+      .evaluateAll((elements) =>
+        elements.map((el) => ({
+          opacity: getComputedStyle(el).opacity,
+          animation: getComputedStyle(el).animationName,
+          transform: getComputedStyle(el).transform,
+        })),
+      );
+    expect(
+      sections.every(
+        (section) =>
+          section.opacity === "1" &&
+          section.animation === "none" &&
+          section.transform === "none",
+      ),
+    ).toBe(true);
+    await reduced
+      .getByRole("button", { name: "Prospect toevoegen", exact: true })
+      .click();
+    await expect(reduced.getByRole("dialog")).toBeVisible();
+    expect(
+      await reduced
+        .getByRole("dialog")
+        .evaluate((el) => getComputedStyle(el).animationName),
+    ).toBe("none");
+    expect(
+      await reduced.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+  } finally {
+    await context.close();
+  }
+});

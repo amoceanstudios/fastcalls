@@ -30,6 +30,7 @@ import {
   Search,
   RefreshCw,
 } from "lucide-react";
+import { Illustration } from "./components/Illustration";
 import { db } from "./db/database";
 import { defaultProfile, type Profile } from "./lib/models";
 import { FeedbackProvider, Modal } from "./components/ui";
@@ -64,6 +65,7 @@ class ErrorBoundary extends Component<
   render() {
     return this.state.error ? (
       <div className="fatal">
+        <Illustration kind="error" />
         <h1>Uw werkstation kon niet worden geladen</h1>
         <p>
           Controleer of deze browser lokale opslag toestaat en of er voldoende
@@ -279,6 +281,7 @@ function Shell() {
                 path="*"
                 element={
                   <div>
+                    <Illustration kind="search" />
                     <h1>Pagina niet gevonden</h1>
                     <Link to="/">Terug naar overzicht</Link>
                   </div>

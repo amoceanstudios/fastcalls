@@ -16,6 +16,8 @@ import {
   Phone,
   Building2,
 } from "lucide-react";
+import { Illustration, type IllustrationKind } from "./Illustration";
+import { CompanyMark } from "./CompanyMark";
 import { Link } from "react-router-dom";
 import {
   type Prospect,
@@ -24,6 +26,11 @@ import {
   normalizePhone,
 } from "../lib/models";
 import { initiateCall, changeStatus, db } from "../db/database";
+type Notice = { message: string; error: boolean };
+const NoticeContext = createContext<{
+  notice: Notice | null;
+  dismiss: () => void;
+}>({ notice: null, dismiss: () => {} });
 export const FeedbackContext = createContext<
   (message: string, error?: boolean) => void
 >(() => {});
@@ -45,28 +52,32 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
     if (!error) timer.current = setTimeout(() => setFeedback(null), 4500);
   };
   return (
-    <FeedbackContext.Provider value={notify}>
-      {children}
-      {feedback && (
-        <div
-          role={feedback.error ? "alert" : "status"}
-          className={`toast ${feedback.error ? "error" : ""}`}
-        >
-          {feedback.error ? (
-            <AlertCircle size={20} />
-          ) : (
-            <CheckCircle2 size={20} />
-          )}
-          <span>{feedback.message}</span>
-          <button
-            aria-label="Melding sluiten"
-            onClick={() => setFeedback(null)}
+    <NoticeContext.Provider
+      value={{ notice: feedback, dismiss: () => setFeedback(null) }}
+    >
+      <FeedbackContext.Provider value={notify}>
+        {children}
+        {feedback && (
+          <div
+            role={feedback.error ? "alert" : "status"}
+            className={`toast ${feedback.error ? "error" : ""}`}
           >
-            <X size={18} />
-          </button>
-        </div>
-      )}
-    </FeedbackContext.Provider>
+            {feedback.error ? (
+              <Illustration kind="error" compact />
+            ) : (
+              <Illustration kind="success" compact />
+            )}
+            <span>{feedback.message}</span>
+            <button
+              aria-label="Melding sluiten"
+              onClick={() => setFeedback(null)}
+            >
+              <X size={18} />
+            </button>
+          </div>
+        )}
+      </FeedbackContext.Provider>
+    </NoticeContext.Provider>
   );
 }
 export function useAction() {
@@ -101,6 +112,14 @@ export function Modal({
   onClose: () => void;
   children: ReactNode;
 }) {
+  const { notice, dismiss } = useContext(NoticeContext);
+  const previousFocus = useRef<HTMLElement | null>(
+    typeof document !== "undefined" &&
+      document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null,
+  );
+  const content = useRef<HTMLDivElement>(null);
   return (
     <Dialog.Root
       open={open}
@@ -110,7 +129,25 @@ export function Modal({
     >
       <Dialog.Portal>
         <Dialog.Overlay className="modal-overlay" />
-        <Dialog.Content className="modal-content">
+        <Dialog.Content
+          ref={content}
+          className="modal-content"
+          onOpenAutoFocus={() => {
+            const focused = document.activeElement;
+            if (
+              focused instanceof HTMLElement &&
+              !content.current?.contains(focused)
+            )
+              previousFocus.current = focused;
+          }}
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            const target = previousFocus.current?.isConnected
+              ? previousFocus.current
+              : document.getElementById("main");
+            target?.focus({ preventScroll: true });
+          }}
+        >
           <div className="modal-heading">
             <div>
               <Dialog.Title>{title}</Dialog.Title>
@@ -122,6 +159,22 @@ export function Modal({
               <X />
             </Dialog.Close>
           </div>
+          {notice && (
+            <div
+              className={`inline-notice ${notice.error ? "error" : "success"}`}
+              role={notice.error ? "alert" : "status"}
+            >
+              <Illustration kind={notice.error ? "error" : "success"} compact />
+              <span>{notice.message}</span>
+              <button
+                className="icon-button"
+                aria-label="Melding in dialoog sluiten"
+                onClick={dismiss}
+              >
+                <X size={16} />
+              </button>
+            </div>
+          )}
           {children}
         </Dialog.Content>
       </Dialog.Portal>
@@ -132,16 +185,16 @@ export function Empty({
   title,
   description,
   children,
+  illustration = "empty",
 }: {
   title: string;
+  illustration?: IllustrationKind;
   description: string;
   children?: ReactNode;
 }) {
   return (
     <div className="empty">
-      <div className="empty-icon">
-        <Building2 size={30} />
-      </div>
+      <Illustration kind={illustration} />
       <h2>{title}</h2>
       <p>{description}</p>
       {children}
@@ -209,7 +262,8 @@ export const ProspectCard = memo(function ProspectCard({ p }: { p: Prospect }) {
         </select>
       </div>
       <Link to={`/prospects/${p.id}`} className="company-title">
-        {p.companyName}
+        <CompanyMark p={p} />
+        <span className="company-name">{p.companyName}</span>
         <ArrowUpRight size={18} />
       </Link>
       <p className="company-meta muted small">

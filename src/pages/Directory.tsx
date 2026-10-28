@@ -75,6 +75,7 @@ export default function Directory() {
         </div>
       ) : (
         <Empty
+          illustration={data.p.length ? "search" : "empty"}
           title={
             data.p.length
               ? "Geen bedrijven gevonden"

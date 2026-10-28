@@ -1,3 +1,5 @@
+import { Reveal } from "../components/Reveal";
+import { Illustration } from "../components/Illustration";
 import { useMemo, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { Link } from "react-router-dom";
@@ -113,7 +115,7 @@ export default function Dashboard() {
         ))}
       </div>
       {!prospects.length ? (
-        <section className="welcome-panel">
+        <Reveal className="welcome-panel">
           <div className="welcome-copy">
             <span className="eyebrow">AAN DE SLAG</span>
             <h2>
@@ -134,31 +136,35 @@ export default function Dashboard() {
               Alle gegevens blijven op dit apparaat.
             </span>
           </div>
-          <div className="onboarding-steps" aria-label="Aan de slag">
-            <div>
-              <span>01</span>
-              <p>
-                <strong>Importeer</strong>Uw bedrijven, ongewijzigd overgenomen.
-              </p>
-            </div>
-            <div>
-              <span>02</span>
-              <p>
-                <strong>Maak contact</strong>Bel direct vanuit een
-                bedrijfsprofiel.
-              </p>
-            </div>
-            <div>
-              <span>03</span>
-              <p>
-                <strong>Volg op</strong>Leg het gesprek en de volgende stap
-                vast.
-              </p>
+          <div className="onboarding-visual">
+            <Illustration kind="onboarding" />
+            <div className="onboarding-steps" aria-label="Aan de slag">
+              <div>
+                <span>01</span>
+                <p>
+                  <strong>Importeer</strong>Uw bedrijven, ongewijzigd
+                  overgenomen.
+                </p>
+              </div>
+              <div>
+                <span>02</span>
+                <p>
+                  <strong>Maak contact</strong>Bel direct vanuit een
+                  bedrijfsprofiel.
+                </p>
+              </div>
+              <div>
+                <span>03</span>
+                <p>
+                  <strong>Volg op</strong>Leg het gesprek en de volgende stap
+                  vast.
+                </p>
+              </div>
             </div>
           </div>
-        </section>
+        </Reveal>
       ) : (
-        <section className="next-panel">
+        <Reveal className="next-panel">
           <div className="next-copy">
             <div className="section-title">
               <span className="eyebrow">VOLGENDE ACTIE</span>
@@ -209,10 +215,10 @@ export default function Dashboard() {
             </div>
             <ArrowUpRight size={18} />
           </Link>
-        </section>
+        </Reveal>
       )}
       <div className="dashboard-columns">
-        <section className="panel">
+        <Reveal className="panel">
           <div className="section-title">
             <h2>
               Op de agenda<span className="count">{tasks.length}</span>
@@ -276,8 +282,8 @@ export default function Dashboard() {
           {summary.overdue > 0 && (
             <p className="small red">{summary.overdue} achterstallig</p>
           )}
-        </section>
-        <section className="panel progress-panel">
+        </Reveal>
+        <Reveal className="panel progress-panel">
           <div className="section-title">
             <h2>Vandaag</h2>
             <span className="small muted">Uw activiteit</span>
@@ -318,10 +324,10 @@ export default function Dashboard() {
               Offertes (totaal)
             </span>
           </div>
-        </section>
+        </Reveal>
       </div>
       <div className="dashboard-columns">
-        <section className="panel">
+        <Reveal className="panel">
           <div className="section-title">
             <h2>Recente activiteit</h2>
           </div>
@@ -345,8 +351,8 @@ export default function Dashboard() {
               Uw eerste acties verschijnen hier.
             </p>
           )}
-        </section>
-        <section className="panel">
+        </Reveal>
+        <Reveal className="panel">
           <div className="section-title">
             <h2>Snel naar een bedrijf</h2>
           </div>
@@ -390,7 +396,7 @@ export default function Dashboard() {
               Zoek direct in uw eigen bedrijvenlijst.
             </p>
           )}
-        </section>
+        </Reveal>
       </div>
       {add && <ProspectForm onClose={() => setAdd(false)} />}
     </>

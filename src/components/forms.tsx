@@ -1,3 +1,5 @@
+import { prepareCompanyImage } from "../lib/companyImage";
+import { CompanyMark } from "./CompanyMark";
 import { useState, useContext } from "react";
 import { addDays } from "date-fns";
 import {
@@ -24,6 +26,7 @@ export function ProspectForm({
     () => prospect ?? createProspect({ companyName: "Nieuw bedrijf" }),
   );
   const [tagText, setTagText] = useState(p.tags.join(", "));
+  const [imageBusy, setImageBusy] = useState(false);
   const [busy, setBusy] = useState(false);
   const action = useAction();
   const notify = useContext(FeedbackContext);
@@ -78,6 +81,53 @@ export function ProspectForm({
           setBusy(false);
         }}
       >
+        <div className="company-image-field">
+          <div className="company-image-preview">
+            {p.logoDataUrl ? (
+              <CompanyMark p={p} />
+            ) : (
+              <span aria-hidden="true">
+                {p.companyName.slice(0, 2).toUpperCase()}
+              </span>
+            )}
+          </div>
+          <div className="grow">
+            <label>
+              Bedrijfslogo of foto (optioneel)
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                aria-label="Bedrijfsafbeelding kiezen"
+                disabled={imageBusy}
+                onChange={async (event) => {
+                  const file = event.target.files?.[0];
+                  if (!file) return;
+                  setImageBusy(true);
+                  await action(async () => {
+                    const logoDataUrl = await prepareCompanyImage(file);
+                    setP((current) => ({ ...current, logoDataUrl }));
+                  }, "Afbeelding toegevoegd. Kies Opslaan om te bewaren.");
+                  setImageBusy(false);
+                  event.target.value = "";
+                }}
+              />
+            </label>
+            <p className="small muted">
+              PNG, JPEG of WebP · maximaal 3 MB · blijft lokaal
+            </p>
+            {p.logoDataUrl && (
+              <button
+                type="button"
+                className="text-link"
+                onClick={() =>
+                  setP((current) => ({ ...current, logoDataUrl: undefined }))
+                }
+              >
+                Afbeelding verwijderen
+              </button>
+            )}
+          </div>
+        </div>
         <div className="form-grid">
           {field("companyName", "Bedrijfsnaam")}
           {field("city", "Plaats")}
@@ -133,7 +183,7 @@ export function ProspectForm({
           <button type="button" onClick={onClose}>
             Annuleren
           </button>
-          <button className="primary" disabled={busy}>
+          <button className="primary" disabled={busy || imageBusy}>
             Opslaan
           </button>
         </div>
