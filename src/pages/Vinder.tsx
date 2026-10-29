@@ -343,6 +343,13 @@ function VinderCard({
             {[p.address, p.city, p.province].filter(Boolean).join(" · ") ||
               "Locatie niet ingevuld"}
           </p>
+          <div className="vinder-contact-actions">
+            <CallButton p={p} large />
+            <button onClick={() => setEmail(true)}>
+              <Mail size={18} />
+              Mail opstellen
+            </button>
+          </div>
           {p.valueProposition && (
             <p className="vinder-pitch">{p.valueProposition}</p>
           )}
@@ -354,13 +361,6 @@ function VinderCard({
                 Website bekijken <ArrowUpRight size={14} />
               </a>
             )}
-          </div>
-          <div className="vinder-contact-actions">
-            <CallButton p={p} large />
-            <button onClick={() => setEmail(true)}>
-              <Mail size={18} />
-              Mail opstellen
-            </button>
           </div>
           <label className="vinder-note">
             Gespreksnotitie
