@@ -811,3 +811,21 @@ html[data-theme]
     transform: none;
   }
 }
+
+.vinder-launch {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 22px;
+  padding: 16px 20px;
+  border-radius: 18px;
+  background: var(--liquid-reflection), var(--studio-tint);
+}
+.vinder-launch span {
+  display: grid;
+  gap: 4px;
+  flex: 1;
+}
+.vinder-launch small {
+  color: var(--muted);
+  font-weight: 450;
+}

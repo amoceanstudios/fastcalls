@@ -1728,3 +1728,108 @@ test("back-up herstelt bewaarde statuskeuzes op een onbewerkte catalogus en toon
     }),
   ).toBeVisible();
 });
+
+test("Vinder sorteert met swipes, bewaart notities na herladen en herstelt een verkeerde swipe", async ({
+  page,
+}) => {
+  await importData(page);
+  await page.goto("/vinder");
+  await expect(page.getByRole("heading", { name: "Vinder." })).toBeVisible();
+  const card = page.locator(".vinder-card");
+  const company = await card.locator("h2").innerText();
+  await page
+    .getByLabel("Vinder gespreksnotitie")
+    .fill("Fictief goed gesprek, demo gewenst.");
+  await page.evaluate(() => window.scrollTo(0, 0));
+  const box = (await card.boundingBox())!;
+  // Mouse uses the same pointer path as touch; drag from noninteractive space.
+  await page.mouse.move(box.x + box.width / 2, box.y + 30);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2 - 115, box.y + 30, { steps: 10 });
+  await page.mouse.up();
+  await expect(page.locator(".vinder-card h2")).not.toHaveText(company);
+  await page.getByRole("button", { name: /^Geïnteresseerd 1$/ }).click();
+  await expect(page.locator(".vinder-results")).toContainText(company);
+  await page.reload();
+  await page.getByRole("button", { name: /^Geïnteresseerd 1$/ }).click();
+  await page
+    .locator(".vinder-results")
+    .getByRole("link", { name: company })
+    .click();
+  await expect(
+    page.getByText("Fictief goed gesprek, demo gewenst.", { exact: true }),
+  ).toBeVisible();
+  await page.goto("/vinder");
+  await page.getByRole("button", { name: "Laatste swipe herstellen" }).click();
+  await expect(
+    page.getByRole("button", { name: /^Geïnteresseerd 0$/ }),
+  ).toHaveAttribute("aria-pressed", "false");
+  // The reverse direction is explicit and deliberately opposite Tinder's convention.
+  const rightCompany = await page.locator(".vinder-card h2").innerText();
+  await page.evaluate(() => window.scrollTo(0, 0));
+  const right = (await page.locator(".vinder-card").boundingBox())!;
+  const touch = await page.context().newCDPSession(page);
+  const origin = { x: right.x + right.width / 2, y: right.y + 30 };
+  await touch.send("Input.dispatchTouchEvent", {
+    type: "touchStart",
+    touchPoints: [origin],
+  });
+  for (let step = 1; step <= 10; step++) {
+    await touch.send("Input.dispatchTouchEvent", {
+      type: "touchMove",
+      touchPoints: [{ x: origin.x + step * 11.5, y: origin.y }],
+    });
+  }
+  await touch.send("Input.dispatchTouchEvent", {
+    type: "touchEnd",
+    touchPoints: [],
+  });
+  await touch.detach();
+  await page.getByRole("button", { name: /^Geen interesse 1$/ }).click();
+  await expect(page.locator(".vinder-results")).toContainText(rightCompany);
+  await expect(
+    page.getByRole("button", { name: "Laatste swipe herstellen" }),
+  ).toBeEnabled();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+});
+
+test("Vinder biedt knoppen, overslaan zonder statuswijziging en een mailconcept", async ({
+  page,
+}) => {
+  await importData(page);
+  await page.goto("/vinder");
+  const first = await page.locator(".vinder-card h2").innerText();
+  const controls = (await page.locator(".vinder-decisions").boundingBox())!;
+  const navigation = (await page
+    .getByRole("navigation", { name: "Mobiele navigatie" })
+    .boundingBox())!;
+  expect(controls.y).toBeGreaterThan(0);
+  expect(controls.y + controls.height).toBeLessThanOrEqual(navigation.y);
+
+  await page.getByRole("button", { name: "Mail opstellen" }).click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await expect(
+    page.getByRole("textbox", { name: "Bericht", exact: true }),
+  ).not.toHaveValue("");
+  await page.getByRole("button", { name: "Sluiten", exact: true }).click();
+  await page.getByRole("button", { name: "Voor nu overslaan" }).click();
+  await expect(page.locator(".vinder-card h2")).not.toHaveText(first);
+  await page
+    .getByRole("button", { name: "Geïnteresseerd", exact: false })
+    .filter({ has: page.locator("small") })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Deze stapel is afgerond" }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Overgeslagen bedrijven terughalen" })
+    .click();
+  await expect(page.locator(".vinder-card h2")).toHaveText(first);
+  const { default: AxeBuilder } = await import("@axe-core/playwright");
+  const results = await new AxeBuilder({ page }).analyze();
+  expect(results.violations).toEqual([]);
+});

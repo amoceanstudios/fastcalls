@@ -122,7 +122,7 @@ export function FollowUpRow({
     </div>
   );
 }
-function EmailComposer({
+export function EmailComposer({
   p,
   onClose,
   draftId,

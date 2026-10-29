@@ -32,6 +32,7 @@ import {
   RefreshCw,
   Ellipsis,
   NotebookPen,
+  Layers,
 } from "lucide-react";
 import { Illustration } from "./components/Illustration";
 import { db } from "./db/database";
@@ -39,6 +40,7 @@ import { defaultProfile, type Profile } from "./lib/models";
 import { FeedbackProvider, Modal } from "./components/ui";
 import { screens, preloadRoute } from "./app/routes";
 const {
+  vinder: { Component: Vinder },
   dashboard: { Component: Dashboard },
   work: { Component: MyWork },
   recovery: { Component: StorageRecovery },
@@ -54,6 +56,7 @@ const nav = [
   { to: "/work", label: "Mijn werk", icon: NotebookPen },
   { to: "/prospects", label: "Bedrijven", icon: Building2 },
   { to: "/followups", label: "Opvolgingen", icon: CalendarDays },
+  { to: "/vinder", label: "Vinder", icon: Layers },
   { to: "/calling", label: "Belmodus", icon: Phone },
   { to: "/data", label: "Gegevens & back-ups", icon: Database },
 ];
@@ -198,7 +201,7 @@ function Shell() {
         </Link>
         <div className="workspace-label">DAGELIJKS</div>
         <nav aria-label="Hoofdnavigatie">
-          {nav.slice(0, 5).map((n) => (
+          {nav.slice(0, 6).map((n) => (
             <NavLink key={n.to} to={n.to} end={n.to === "/"}>
               <n.icon size={19} />
               {n.label}
@@ -293,6 +296,7 @@ function Shell() {
               <Route path="/recovery" element={<StorageRecovery />} />
               <Route path="/prospects" element={<Directory />} />
               <Route path="/prospects/:id" element={<Detail />} />
+              <Route path="/vinder" element={<Vinder />} />
               <Route path="/calling" element={<Calling />} />
               <Route path="/followups" element={<Followups />} />
               <Route path="/data" element={<DataCenter />} />
@@ -332,12 +336,13 @@ function Shell() {
             </NavLink>
           ))}
           <button
-            className={`mobile-more ${location.pathname === "/data" || location.pathname === "/settings" || location.pathname === "/calling" || location.pathname === "/recovery" ? "active" : ""}`}
+            className={`mobile-more ${location.pathname === "/data" || location.pathname === "/settings" || location.pathname === "/vinder" || location.pathname === "/calling" || location.pathname === "/recovery" ? "active" : ""}`}
             aria-haspopup="dialog"
             aria-expanded={more}
             aria-current={
               location.pathname === "/data" ||
               location.pathname === "/settings" ||
+              location.pathname === "/vinder" ||
               location.pathname === "/calling" ||
               location.pathname === "/recovery"
                 ? "page"
@@ -358,6 +363,16 @@ function Shell() {
           onClose={() => setMore(false)}
         >
           <div className="more-menu">
+            <Link to="/vinder" onClick={() => setMore(false)}>
+              <span className="more-menu-icon">
+                <Layers size={22} />
+              </span>
+              <span>
+                <strong>Vinder</strong>
+                <small>Bedrijven swipen, bellen en interesse bewaren</small>
+              </span>
+              <ArrowUpRight size={17} />
+            </Link>
             <Link to="/calling" onClick={() => setMore(false)}>
               <span className="more-menu-icon">
                 <Phone size={22} />

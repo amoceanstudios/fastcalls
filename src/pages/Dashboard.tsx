@@ -166,6 +166,14 @@ export default function Dashboard() {
         </div>
       </header>
       <PersonalOverview data={data} />
+      <Link className="button vinder-launch" to="/vinder">
+        <Phone size={18} />
+        <span>
+          <strong>Open Vinder</strong>
+          <small>Eén bedrijf. Bel, mail en swipe uw uitkomst.</small>
+        </span>
+        <ArrowRight size={18} />
+      </Link>
       {!prospects.length ? (
         <>
           <Reveal className="welcome-panel overview-welcome">

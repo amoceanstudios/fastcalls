@@ -193,3 +193,9 @@ Bij samenvoegen met een back-up worden exacte bedrijfsidentifiers eerst gematcht
 De hersteltransactie gebruikt bulkbewerkingen zodat een grote meegeleverde catalogus het herstel niet onnodig vertraagt. Een bewaarde losse `followUpAt` wordt niet gewist als er geen apart kalenderrecord is. Het herstelresultaat meldt aantallen daadwerkelijk aanwezige notities, gesprekken en statuskeuzes; nul nieuw toegevoegde bedrijven betekent niet dat persoonlijke gegevens niet hersteld zijn.
 
 Persoonlijke back-ups worden nooit in de publieke catalogus of Git opgenomen. Validatie met een aangeleverde back-up gebeurt uitsluitend in geïsoleerde, tijdelijke opslag; dit is geen bewijs dat de browser op het apparaat van de gebruiker al hersteld is. Herstel in die browser vereist selectie van het eigen bestand in de app, met de vervangoptie uitgeschakeld voor samenvoegen.
+
+### Vinder
+
+Open Vinder via het dashboard of Meer op mobiel. Swipe links voor een goed gesprek met interesse, rechts voor geen interesse. Dezelfde acties zijn als knoppen beschikbaar. De stapel bevat alleen Te bellen, Gebeld en Niet opgenomen; terugbelstatussen, opvolgingen en klanten blijven erbuiten. Beide resultaatlijsten gebruiken de bestaande bedrijfsstatussen, inclusief eerder beoordeelde bedrijven.
+
+Een swipe bewaart de status, gespreksnotitie en historie samen in één lokale transactie. De laatste open belactie bij dat bedrijf krijgt de gekozen uitkomst; zonder open belactie wordt geen gesprek aangemaakt. De laatste swipe is ook na herladen te herstellen, zolang het bedrijf en de gekoppelde belactie niet inmiddels zijn gewijzigd. Notities blijven bij herstel behouden. Overslaan verandert geen bedrijfsstatus; overgeslagen bedrijven zijn terug te halen. Alle opgeslagen records vallen onder de bestaande JSON-back-up.

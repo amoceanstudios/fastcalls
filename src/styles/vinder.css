@@ -1,0 +1,384 @@
+.vinder-page {
+  max-width: 900px;
+  margin: auto;
+}
+.vinder-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  padding: 5px;
+  border: 1px solid var(--studio-stroke);
+  border-radius: 20px;
+  background: var(--studio-field);
+}
+.vinder-tabs button {
+  flex-wrap: wrap;
+  padding: 12px 6px;
+  background: transparent;
+  border-color: transparent;
+}
+.vinder-tabs button[aria-pressed="true"] {
+  background: var(--liquid-reflection), var(--studio-tint);
+  color: var(--primary);
+  border-color: var(--studio-rim);
+}
+.vinder-tabs b {
+  font-variant-numeric: tabular-nums;
+}
+.vinder-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+}
+.vinder-sector {
+  display: grid;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--muted);
+  max-width: 440px;
+  margin: 18px auto;
+}
+.vinder-direction {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  max-width: 520px;
+  margin: 24px auto 18px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.vinder-direction span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.vinder-direction span:first-child {
+  color: var(--success);
+}
+.vinder-deck {
+  position: relative;
+  max-width: 520px;
+  margin: 0 auto;
+  padding-bottom: 10px;
+  isolation: isolate;
+}
+.vinder-deck::before {
+  content: "";
+  position: absolute;
+  inset: 12px 12px 0;
+  transform: rotate(2deg);
+  border: 1px solid var(--studio-stroke);
+  border-radius: 32px;
+  background: var(--studio-surface-solid);
+  z-index: -1;
+}
+.vinder-card {
+  position: relative;
+  border: 1px solid var(--studio-stroke);
+  border-top-color: var(--studio-rim);
+  border-radius: 32px 32px 32px 10px;
+  padding: 28px;
+  background:
+    radial-gradient(ellipse at 100% 0%, var(--studio-tint), transparent 55%),
+    var(--liquid-reflection), var(--studio-surface-solid);
+  box-shadow: var(--studio-chrome-shadow);
+  touch-action: pan-y;
+  transition: transform 180ms var(--ease);
+  overflow-wrap: anywhere;
+}
+.vinder-card.is-dragging {
+  transition: none;
+  user-select: none;
+}
+.vinder-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+.vinder-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 20px;
+  border: 1px solid var(--studio-rim);
+  background: var(--liquid-reflection), var(--studio-tint);
+  color: var(--primary);
+}
+.vinder-brand:has(.company-mark) > svg {
+  display: none;
+}
+.vinder-card h2 {
+  font-size: clamp(26px, 5vw, 38px);
+  letter-spacing: -0.045em;
+  line-height: 1.15;
+  margin: 10px 0 16px;
+}
+.vinder-location {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.vinder-location svg {
+  flex-shrink: 0;
+}
+.vinder-pitch {
+  font-size: 14px;
+  line-height: 1.7;
+}
+.vinder-contact {
+  display: grid;
+  gap: 8px;
+  margin: 22px 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+.vinder-contact a {
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 44px;
+}
+.vinder-contact-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  align-items: center;
+}
+.vinder-note {
+  display: grid;
+  gap: 8px;
+  margin-top: 22px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.vinder-note textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 80px;
+}
+.vinder-profile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 16px;
+  min-height: 44px;
+  color: var(--primary);
+  font-size: 12px;
+}
+.vinder-card summary {
+  cursor: pointer;
+  padding: 14px 0;
+  font-size: 12px;
+  color: var(--muted);
+  min-height: 44px;
+}
+.vinder-saved-note {
+  white-space: pre-wrap;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.vinder-stamp {
+  position: absolute;
+  top: 90px;
+  right: 22px;
+  transform: rotate(12deg);
+  padding: 10px;
+  border: 2px solid currentColor;
+  border-radius: 10px;
+  font-size: 18px;
+  font-weight: 800;
+  pointer-events: none;
+  background: var(--studio-surface-solid);
+}
+.vinder-stamp.positive {
+  color: var(--success);
+}
+.vinder-stamp.negative {
+  color: var(--danger);
+}
+.vinder-decisions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  max-width: 520px;
+  margin: 22px auto 12px;
+}
+.vinder-decisions button {
+  min-height: 72px;
+  gap: 12px;
+  border-radius: 22px;
+}
+.vinder-decisions span {
+  display: grid;
+  gap: 5px;
+  text-align: left;
+}
+.vinder-decisions small {
+  font-size: 10px;
+  font-weight: 450;
+}
+.vinder-yes {
+  color: var(--success);
+  background: var(--success-soft);
+}
+.vinder-no {
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+.vinder-skip {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  max-width: 520px;
+  margin: auto;
+}
+.vinder-skip small,
+.vinder-footnote {
+  font-size: 12px;
+  line-height: 1.7;
+  text-align: center;
+  color: var(--muted);
+}
+.vinder-footnote {
+  max-width: 520px;
+  margin: 24px auto;
+}
+.vinder-results {
+  display: grid;
+  gap: 12px;
+}
+.vinder-results article {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  align-items: center;
+  padding: 20px;
+  gap: 16px;
+}
+.vinder-results article > div:last-child,
+.vinder-results article a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+@media (max-width: 700px) {
+  .vinder-card {
+    padding: 22px;
+    border-radius: 26px 26px 26px 8px;
+  }
+  .vinder-card-top {
+    margin-bottom: 20px;
+  }
+  .vinder-tabs button {
+    font-size: 11px;
+    gap: 5px;
+  }
+  .vinder-toolbar > span {
+    font-size: 11px;
+  }
+  .vinder-toolbar button {
+    font-size: 11px;
+  }
+  .vinder-decisions button {
+    padding-inline: 8px;
+    gap: 8px;
+    font-size: 12px;
+  }
+  .vinder-page {
+    overflow-x: clip;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vinder-card {
+    transition: none;
+  }
+  .vinder-card.is-dragging {
+    transform: none !important;
+  }
+}
+
+.vinder-toolbar .vinder-sector {
+  flex: 1;
+  min-width: 130px;
+  margin: 0;
+}
+@media (max-width: 700px) {
+  .vinder-page .page-header {
+    margin-bottom: 16px;
+  }
+  .vinder-page .page-header p {
+    display: none;
+  }
+  .vinder-page .eyebrow {
+    font-size: 9px;
+  }
+  .vinder-page .page-header h1 {
+    font-size: 32px;
+  }
+  .vinder-toolbar {
+    gap: 10px;
+    margin: 12px 0;
+    align-items: end;
+  }
+  .vinder-toolbar > button {
+    max-width: 145px;
+    padding: 8px;
+  }
+  .vinder-toolbar .vinder-sector select {
+    padding-inline: 10px;
+  }
+  .vinder-direction {
+    margin: 16px 0 12px;
+    font-size: 10px;
+  }
+  .vinder-card {
+    padding: 20px;
+  }
+  .vinder-card-top {
+    margin-bottom: 14px;
+  }
+  .vinder-brand {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+  }
+  .vinder-contact {
+    margin: 16px 0;
+  }
+  .vinder-decisions {
+    position: fixed;
+    bottom: calc(88px + env(safe-area-inset-bottom));
+    left: 10px;
+    right: 10px;
+    margin: 0 auto;
+    padding: 7px;
+    gap: 8px;
+    z-index: 25;
+    border: 1px solid var(--studio-rim);
+    border-radius: 24px;
+    background: var(--glass-bg);
+    box-shadow: var(--studio-chrome-shadow);
+  }
+  .vinder-decisions button {
+    min-height: 60px;
+    border-radius: 17px;
+  }
+  .vinder-page {
+    padding-bottom: 90px;
+  }
+  .vinder-note,
+  .vinder-profile,
+  .vinder-skip {
+    scroll-margin-bottom: 190px;
+  }
+}
